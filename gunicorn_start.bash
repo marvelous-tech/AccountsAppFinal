@@ -1,8 +1,5 @@
 NAME="django_app"
 DJANGODIR=/home/ubuntu/project
-SOCKFILE=/run/gunicorn.sock
-USER=ubuntu
-GROUP=ubuntu
 NUM_WORKERS=3
 DJANGO_SETTINGS_MODULE=project.settings
 DJANGO_WSGI_MODULE=project.wsgi
@@ -18,8 +15,7 @@ export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 exec /home/ubuntu/.local/bin/pipenv run gunicorn ${DJANGO_WSGI_MODULE}:application \
     --name $NAME \
     --workers $NUM_WORKERS \
-    --user=$USER --group=$GROUP \
-    --bind=unix:$SOCKFILE \
+    --bind=8000:8000 \
     --log-level=debug \
     --log-file=-
 
