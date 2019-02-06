@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ pdf_name }}</title>
+    <style>
+        @page {
+            size: a4 portrait;
+
+            @frame header_frame {
+                /* Static Frame */
+                -pdf-frame-content: header_content;
+                left: 40pt;
+                width: 512pt;
+                top: 25pt;
+                height: 105pt;
+            }
+
+            @frame content_frame {
+                /* Content Frame */
+                left: 40pt;
+                width: 512pt;
+                top: 90pt;
+                height: 632pt;
+            }
+
+            @frame footer_frame {
+                /* Another static Frame */
+                -pdf-frame-content: footer_content;
+                left: 40pt;
+                width: 512pt;
+                top: 750pt;
+                height: 90pt;
+            }
+        }
+
+        .sign {
+            width: 100%;
+            height: 100px;
+        }
+
+        .sign-name {
+            position: relative;
+            top: 70px;
+        }
+
+        table,
+        th,
+        td {
+            width: 100%;
+            border: 1px solid #555;
+        }
+
+        th,
+        td {
+            height: 15pt;
+            margin: 0px;
+            padding-top: 2pt;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .error {
+            background-color: #ffa4a2;
+            color: #444;
+        }
+        .good {
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Content for Static Frame 'header_frame' -->
+    <div id="header_content">
+        <h1 style="text-align: center; font-size: 20pt; margin-bottom: 1pt;">
+            {{ company.name }}
+        </h1>
+        <p style="text-align: center">{{ company.address }}</p>
+        <hr>
+    </div>
+
+    <!-- Content for Static Frame 'footer_frame' -->
+    <div id="footer_content" style="text-align: center; color: #444">
+        <hr>
+        All signatures of the authority must include!
+        (c) - page <pdf:pagenumber> of <pdf:pagecount>
+        
+            <p style="color: #bf360c;">Total Amount: <b>{{ sum }} Taka</b></p>
+                <p>Page ID: <b>{{ page_unique_id }}</b></p>
+    </div>
+
+    <div>
+        <h5>Expenditure Records Report in {{ date | date }}</h5>
+        <p>Generated at {{ date }}</p>
+        <table>
+            <thead>
+                <tr>
+                    <td colspan="6"><h5 style="color: #bf360c;">Total amount: {{ sum }} Taka</h5></td>
+                </tr>
+                <tr>
+                    {% for heading in headings %}
+                    <th style="background-color: #80deea;">{{ heading }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in items %}
+                    {% if data.is_verified is False %}
+                        <tr>
+                            <td class="error">{{ data.expend_heading }}</td>
+                            <td class="error">{{ data.added_by }}</td>
+                            <td class="error">{{ data.expend_by }}</td>
+                            <td class="error">{{ data.amount }}</td>
+                            <td class="error">{{ data.expend_date }}</td>
+                            <td class="error">{{ data.added | date }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="good">{{ data.expend_heading }}</td>
+                            <td class="good">{{ data.added_by }}</td>
+                            <td class="good">{{ data.expend_by }}</td>
+                            <td class="good">{{ data.amount }}</td>
+                            <td class="good">{{ data.expend_date }}</td>
+                            <td class="good">{{ data.added | date }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
