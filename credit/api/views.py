@@ -68,8 +68,10 @@ class CreditFundListCreateAPIView(generics.ListCreateAPIView):
     def get_queryset(self):
         return self.request.user.base_user.credit_funds.all().filter(
             added__year=datetime.datetime.today().year,
-            is_deleted=False
-        )
+            is_deleted=False,
+            is_returnable=False,
+            is_refundable=False
+            )
 
 
 class ALLCreditFundListCreateAPIView(generics.ListCreateAPIView):
@@ -82,7 +84,11 @@ class ALLCreditFundListCreateAPIView(generics.ListCreateAPIView):
     filterset_class = CreditFundFilter
 
     def get_queryset(self):
-        return self.request.user.base_user.credit_funds.filter(is_deleted=False)
+        return self.request.user.base_user.credit_funds.filter(
+            is_deleted=False,
+            is_returnable=False,
+            is_refundable=False
+            )
 
 
 class CreditFundRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
@@ -123,10 +129,18 @@ class CreditFundListAPIView(generics.ListAPIView):
     def get_queryset(self):
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
             return self.request.user.base_user.credit_funds.filter(
-                added__year=datetime.datetime.today().year, is_deleted=False)
+                added__year=datetime.datetime.today().year, 
+                is_deleted=False,
+                is_returnable=False,
+                is_refundable=False
+                )
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
             return self.request.user.root_sub_user.base_user.credit_funds.filter(
-                added__year=datetime.datetime.today().year, is_deleted=False)
+                added__year=datetime.datetime.today().year,
+                is_deleted=False,
+                is_returnable=False,
+                is_refundable=False
+                )
 
 
 class ALLCreditFundListAPIView(generics.ListAPIView):
@@ -140,9 +154,13 @@ class ALLCreditFundListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            return self.request.user.base_user.credit_funds.filter(is_deleted=False)
+            return self.request.user.base_user.credit_funds.filter(
+                is_deleted=False
+                )
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            return self.request.user.root_sub_user.base_user.credit_funds.filter(is_deleted=False)
+            return self.request.user.root_sub_user.base_user.credit_funds.filter(
+                is_deleted=False
+                )
 
 
 class CreditFundSettingsView(generics.RetrieveAPIView):
@@ -176,12 +194,14 @@ class CreditLoanRecieveRecordListAPIView(CreditFundListAPIView):
             return self.request.user.base_user.credit_funds.filter(
                 added__year=datetime.datetime.today().year,
                 is_deleted=False,
+                is_refundable=False,
                 is_returnable=True
                 )
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
             return self.request.user.root_sub_user.base_user.credit_funds.filter(
                 added__year=datetime.datetime.today().year,
                 is_deleted=False,
+                is_refundable=False,
                 is_returnable=True
                 )
 
@@ -194,6 +214,7 @@ class CreditLoanRecieveRecordListCreateAPIView(CreditFundListCreateAPIView):
         return self.request.user.base_user.credit_funds.all().filter(
             added__year=datetime.datetime.today().year,
             is_deleted=False,
+            is_refundable=False,
             is_returnable=True
         )
 

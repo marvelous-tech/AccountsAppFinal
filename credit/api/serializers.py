@@ -34,6 +34,7 @@ class CreditFundModelSerializer(serializers.ModelSerializer):
             'uuid',
             'is_deleted',
             'is_refundable',
+            'is_returnable',
             'extra_description'
         )
         read_only_fields = ('uuid', 'added', 'updated', 'source_name', 'is_refundable', 'is_returnable')

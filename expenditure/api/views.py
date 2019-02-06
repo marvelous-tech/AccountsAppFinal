@@ -111,9 +111,17 @@ class ExpenditureRecordCreateAPIView(generics.CreateAPIView):
     def get_queryset(self):
         queryset = None
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(is_deleted=False, is_for_refund=False)
+            queryset = self.request.user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=False
+                )
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(is_deleted=False, is_for_refund=False)
+            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=False
+                )
         return queryset
     
     def get_base_user(self):
@@ -194,9 +202,17 @@ class ExpenditureRecordRetrieveAPIView(generics.RetrieveAPIView):
     def get_queryset(self):
         queryset = None
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(is_deleted=False, is_for_refund=False)
+            queryset = self.request.user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=False
+                )
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(is_deleted=False, is_for_refund=False)
+            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=False
+                )
         return queryset
 
 
@@ -212,9 +228,17 @@ class ExpenditureRecordRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     def get_queryset(self):
         queryset = None
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(is_deleted=False, is_for_refund=False)
+            queryset = self.request.user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=False
+                )
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(is_deleted=False, is_for_refund=False)
+            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=False
+                )
         return queryset
 
 
