@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import generics
 from rest_framework.response import Response
 from drf_multiple_model.views import FlatMultipleModelAPIView
@@ -167,54 +168,59 @@ class GrabWhatYouWantedAPIView(generics.GenericAPIView):
     # %Y-%m-%d
 
     def get_todays_open_credit_fund(self):
-        last_expend_records = self.get_expend_records().filter(
-            expend_date__lt=datetime.date.today(),
-            is_verified=True
+        expend_obj_ref_or_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(expend_date__lt=datetime.date.today()),
+            Q(is_for_refund=True) | Q(is_for_return=True)
             )
-        last_credit_funds = self.get_credit_funds().filter(
-            fund_added__lt=datetime.date.today()
+
+        credit_obj = self.get_credit_funds().filter(
+            Q(fund_added__lt=datetime.date.today())
             )
-        last_credit_funds_amounts = [obj.amount for obj in last_credit_funds]
-        last_expend_records_amounts = [obj.amount for obj in last_expend_records]
-        last_credit_fund_total_amount = utils.sum_int_of_array(last_credit_funds_amounts)
-        last_expend_record_total_amount = utils.sum_int_of_array(last_expend_records_amounts)
-        todays_open_credit_fund = last_credit_fund_total_amount - last_expend_record_total_amount
-        print({
-            'from-start-to-yesterday-expend': last_expend_record_total_amount,
-            'from-start-to-yesterday-credit': last_credit_fund_total_amount,
-            'today-open': last_credit_fund_total_amount - last_expend_record_total_amount
-        })
+
+        all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
+        all_credit_amounts = [obj.amount for obj in credit_obj]
+
+        total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+        total_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+
+        todays_open_credit_fund = total_credit_amount - total_expend_amount
 
         return todays_open_credit_fund
     
     def get_remaining_credit_fund_amount(self):
-        last_expend_records = self.get_expend_records().filter(is_verified=True)
-        last_credit_funds = self.get_credit_funds()
-        last_credit_funds_amounts = [obj.amount for obj in last_credit_funds]
-        last_expend_records_amounts = [obj.amount for obj in last_expend_records]
-        last_credit_fund_total_amount = utils.sum_int_of_array(last_credit_funds_amounts)
-        last_expend_record_total_amount = utils.sum_int_of_array(last_expend_records_amounts)
-        remaining_credit_fund_amount = last_credit_fund_total_amount - last_expend_record_total_amount
+
+        expend_obj = self.get_expend_records().filter(Q(is_verified=True))
+        credit_obj = self.get_credit_funds().filter()
+
+        all_expend_obj_amounts = [obj.amount for obj in expend_obj]
+        all_credit_obj_amounts = [obj.amount for obj in credit_obj]
+
+        total_expend_amount = utils.sum_int_of_array(all_expend_obj_amounts)
+        total_credit_amount = utils.sum_int_of_array(all_credit_obj_amounts)
+
+        remaining_credit_fund_amount = total_credit_amount - total_expend_amount
 
         return remaining_credit_fund_amount
     
     def get_this_month_total_expend_amount(self):
-        expend_obj_non_ref = self.get_expend_records().filter(
-            is_verified=True,
-            expend_date__year=datetime.datetime.now().year,
-            expend_date__month=datetime.datetime.now().month,
-            is_for_refund=False)
-        all_record_amounts_non_ref = [obj.amount for obj in expend_obj_non_ref]
+        expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(expend_date__year=datetime.datetime.now().year),
+            Q(expend_date__month=datetime.datetime.now().month),
+            Q(is_for_refund=False),
+            Q(is_for_return=False)
+            )
+        all_expend_amounts = [obj.amount for obj in expend_obj_non_ref_and_non_ret]
 
-        this_month_total_expend_amount = utils.sum_int_of_array(all_record_amounts_non_ref)
+        this_month_total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
 
         return this_month_total_expend_amount
     
     def get_total_unauthorized_expend_amount(self):
-        unauthorized_expend_records = self.get_expend_records().filter(
-            is_verified=False,
-            is_deleted=False
-        )
+
+        unauthorized_expend_records = self.get_expend_records().filter(Q(is_verified=False))
+
         unauthorized_expend_records_amounts = [obj.amount for obj in unauthorized_expend_records]
         total_unauthorized_expend_amount = utils.sum_int_of_array(unauthorized_expend_records_amounts)
 
@@ -224,99 +230,120 @@ class GrabWhatYouWantedAPIView(generics.GenericAPIView):
         return self.get_base_user().fund_settings.is_not_locked
     
     def get_total_credit_fund_amount(self):
-        queryset = self.get_credit_funds()
-        all_amounts = [obj.amount for obj in queryset]
-        total = utils.sum_int_of_array(all_amounts)
 
-        return total
+        # Todo: Check if this algorithm has a mathmetical error in total credit amount
+
+        expend_obj_ref_or_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(is_for_refund=True) | Q(is_for_return=True)
+            )
+
+        credit_obj = self.get_credit_funds().filter(
+            Q(fund_added__year=datetime.datetime.now().year)
+            )
+        all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
+        all_credit_amounts = [obj.amount for obj in credit_obj]
+
+        total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+        total_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+
+        total_credit_fund_amount = total_credit_amount - total_expend_amount
+
+        return total_credit_fund_amount
 
     # new 
     def get_this_year_total_expend_amount(self):
-        expend_obj_non_ref = self.get_expend_records().filter(
-            is_verified=True,
-            expend_date__year=datetime.datetime.now().year,
-            is_for_refund=False)
-        all_record_amounts_non_ref = [obj.amount for obj in expend_obj_non_ref]
 
-        this_year_total_expend_amount = utils.sum_int_of_array(all_record_amounts_non_ref)
+        # Todo: Check if this algorithm has a mathmetical error in total credit amount
+
+        expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(expend_date__year=datetime.datetime.now().year),
+            Q(is_for_refund=False),
+            Q(is_for_return=False)
+            )
+
+        all_expend_amounts = [obj.amount for obj in expend_obj_non_ref_and_non_ret]
+
+        this_year_total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
 
         return this_year_total_expend_amount
     
     def get_this_year_remaining_credit_fund_amount(self):
-        expend_obj_non_ref = self.get_expend_records().filter(
-            is_verified=True,
-            expend_date__year=datetime.datetime.now().year,
-            is_for_refund=False)
-        all_record_amounts_non_ref = [obj.amount for obj in expend_obj_non_ref]
 
-        this_year_total_expend_amount_non_ref = utils.sum_int_of_array(all_record_amounts_non_ref)
+        # Todo: Check if this algorithm has a mathmetical error in total credit amount
 
-        expend_obj_ref = self.get_expend_records().filter(
-            is_verified=True,
-            expend_date__year=datetime.datetime.now().year,
-            is_for_refund=True)
+        expend_obj = self.get_expend_records().filter(
+            Q(expend_date__year=datetime.datetime.now().year),
+            Q(is_verified=True)
+            )
 
         credit_obj = self.get_credit_funds().filter(
-            fund_added__year=datetime.datetime.now().year
-        )
-        all_record_amounts_ref = [obj.amount for obj in expend_obj_ref]
-        all_amounts = [obj.amount for obj in credit_obj]
+            Q(fund_added__year=datetime.datetime.now().year)
+            )
 
-        this_year_total_expend_amount_ref = utils.sum_int_of_array(all_record_amounts_ref)
-        this_year_total_credit_fund_amount = utils.sum_int_of_array(all_amounts)
+        all_expend_amounts = [obj.amount for obj in expend_obj]
+        all_credit_amounts = [obj.amount for obj in credit_obj]
 
-        real_asset = this_year_total_credit_fund_amount - this_year_total_expend_amount_ref
+        this_year_total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+        this_year_total_credit_amount = utils.sum_int_of_array(all_credit_amounts)
 
-        this_year_remaining_credit_fund_amount = real_asset - this_year_total_expend_amount_non_ref
+        this_year_remaining_credit_fund_amount = this_year_total_credit_amount - this_year_total_expend_amount
 
         return this_year_remaining_credit_fund_amount
     
     def get_this_year_total_credit_fund_amount(self):  # OK
-        expend_obj_ref = self.get_expend_records().filter(
-            is_verified=True,
-            expend_date__year=datetime.datetime.now().year,
-            is_for_refund=True)
+
+        # Todo: Check if this algorithm has a mathmetical error in total credit amount
+
+        expend_obj_ref_or_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(expend_date__year=datetime.datetime.now().year),
+            Q(is_for_refund=True) | Q(is_for_return=True)
+            )
 
         credit_obj = self.get_credit_funds().filter(
-            fund_added__year=datetime.datetime.now().year
+            Q(fund_added__year=datetime.datetime.now().year)
             )
-        all_record_amounts_ref = [obj.amount for obj in expend_obj_ref]
-        all_amounts = [obj.amount for obj in credit_obj]
+        all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
+        all_credit_amounts = [obj.amount for obj in credit_obj]
 
-        this_year_total_expend_amount = utils.sum_int_of_array(all_record_amounts_ref)
-        this_year_total_credit_fund_amount = utils.sum_int_of_array(all_amounts)
+        this_year_total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+        this_year_total_credit_amount = utils.sum_int_of_array(all_credit_amounts)
 
-        print(this_year_total_expend_amount, this_year_total_credit_fund_amount)
+        this_year_total_credit_fund_amount = this_year_total_credit_amount - this_year_total_expend_amount
 
-        real_asset = this_year_total_credit_fund_amount - this_year_total_expend_amount
-
-        print(real_asset)
-
-        return real_asset
+        return this_year_total_credit_fund_amount
     
     def get_this_month_total_credit_fund_amount(self):
-        expend_obj_ref = self.get_expend_records().filter(
-            is_verified=True,
-            expend_date__year=datetime.datetime.now().year,
-            expend_date__month=datetime.datetime.now().month,
-            is_for_refund=True)
-        credit_obj = self.get_credit_funds().filter(
-            fund_added__year=datetime.datetime.now().year,
-            fund_added__month=datetime.datetime.now().month
-        )
-        all_amounts = [obj.amount for obj in credit_obj]
-        all_record_amounts_ref = [obj.amount for obj in expend_obj_ref]
-        this_month_total_credit_fund_amount = utils.sum_int_of_array(all_amounts)
-        this_month_total_expend_amount = utils.sum_int_of_array(all_record_amounts_ref)
 
-        this_month_total_credit_fund_amount = this_month_total_credit_fund_amount - this_month_total_expend_amount
+        # Todo: Check if this algorithm has a mathmetical error in total credit amount
+
+        expend_obj_ref_or_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(expend_date__year=datetime.datetime.now().year),
+            Q(expend_date__month=datetime.datetime.now().month),
+            Q(is_for_refund=True) | Q(is_for_return=True)
+            )
+
+        credit_obj = self.get_credit_funds().filter(
+            Q(fund_added__year=datetime.datetime.now().year),
+            Q(fund_added__month=datetime.datetime.now().month)
+            )
+        all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
+        all_credit_amounts = [obj.amount for obj in credit_obj]
+
+        this_month_total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+        this_month_total_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+
+        this_month_total_credit_fund_amount = this_month_total_credit_amount - this_month_total_expend_amount
 
         return this_month_total_credit_fund_amount
     
     def get_this_year_total_unauthorized_expend_amount(self):
         unauthorized_expend_records = self.get_expend_records().filter(
-            expend_date__year=datetime.datetime.now().year,
-            is_verified=False
+            Q(expend_date__year=datetime.datetime.now().year),
+            Q(is_verified=False)
             )
         unauthorized_expend_records_amounts = [obj.amount for obj in unauthorized_expend_records]
         this_year_total_unauthorized_expend_amount = utils.sum_int_of_array(unauthorized_expend_records_amounts)

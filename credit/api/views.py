@@ -91,7 +91,11 @@ class CreditFundRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     lookup_field = 'uuid'
 
     def get_queryset(self):
-        return self.request.user.base_user.credit_funds.filter(is_deleted=False, is_refundable=False)
+        return self.request.user.base_user.credit_funds.filter(
+            is_deleted=False,
+            is_refundable=False,
+            is_returnable=False
+            )
 
 
 class CreditFundRetrieveAPIView(generics.RetrieveAPIView):
@@ -100,7 +104,11 @@ class CreditFundRetrieveAPIView(generics.RetrieveAPIView):
     lookup_field = 'uuid'
 
     def get_queryset(self):
-        return self.request.user.base_user.credit_funds.filter(is_deleted=False, is_refundable=False)
+        return self.request.user.base_user.credit_funds.filter(
+            is_deleted=False,
+            is_refundable=False,
+            is_returnable=False
+            )
 
 
 class CreditFundListAPIView(generics.ListAPIView):
@@ -154,6 +162,67 @@ class CreditFundSettingsEditView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.base_user.fund_settings
+
+
+# For Loan Recieve Start
+
+
+class CreditLoanRecieveRecordListAPIView(CreditFundListAPIView):
+
+    serializer_class = serializers.CreditFundForLoanRecieveModelSerializer
+
+    def get_queryset(self):
+        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
+            return self.request.user.base_user.credit_funds.filter(
+                added__year=datetime.datetime.today().year,
+                is_deleted=False,
+                is_returnable=True
+                )
+        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
+            return self.request.user.root_sub_user.base_user.credit_funds.filter(
+                added__year=datetime.datetime.today().year,
+                is_deleted=False,
+                is_returnable=True
+                )
+
+
+class CreditLoanRecieveRecordListCreateAPIView(CreditFundListCreateAPIView):
+
+    serializer_class = serializers.CreditFundForLoanRecieveModelSerializer
+
+    def get_queryset(self):
+        return self.request.user.base_user.credit_funds.all().filter(
+            added__year=datetime.datetime.today().year,
+            is_deleted=False,
+            is_returnable=True
+        )
+
+
+class CreditLoanRecieveRecordRetrieveUpdateAPIView(CreditFundRetrieveUpdateAPIView):
+
+    serializer_class = serializers.CreditFundForLoanRecieveModelSerializer
+
+    def get_queryset(self):
+        return self.request.user.base_user.credit_funds.filter(
+            is_deleted=False,
+            is_refundable=False,
+            is_returnable=True
+            )
+
+
+class CreditLoanRecieveRecordRetrieveAPIView(CreditFundRetrieveAPIView):
+
+    serializer_class = serializers.CreditFundForLoanRecieveModelSerializer
+
+    def get_queryset(self):
+        return self.request.user.base_user.credit_funds.filter(
+            is_deleted=False,
+            is_refundable=False,
+            is_returnable=True
+            )
+
+
+# For Loan Recieve End
 
 
 class CreditFundHistory(generics.ListAPIView):

@@ -2,6 +2,7 @@ from rest_framework.permissions import BasePermission
 from base_user.models import BaseUserModel
 from sub_user.models import SubUserModel
 from credit.models import CreditFundSettingsModel
+from user.models import UserExtraInfoModel
 
 
 def multiply_bool_array(array):
@@ -29,6 +30,8 @@ class OnlyBaseUser(BasePermission):
 
     def has_permission(self, request, view):
         if request.user.is_authenticated:
+            if UserExtraInfoModel.objects.filter(user=request.user).exists() is False:
+                return False
             user_info = request.user.user_extra_info
             return BaseUserModel.objects.filter(
                 base_user=request.user
@@ -40,6 +43,8 @@ class OnlySubUser(BasePermission):
 
     def has_permission(self, request, view):
         if request.user.is_authenticated:
+            if UserExtraInfoModel.objects.filter(user=request.user).exists() is False:
+                return False
             user_info = request.user.user_extra_info
             if SubUserModel.objects.filter(root_user=request.user).exists():
                 sub_user = SubUserModel.objects.get(root_user=request.user)
@@ -53,6 +58,8 @@ class BaseUserOrSubUser(BasePermission):
     
     def has_permission(self, request, view):
         if request.user.is_authenticated:
+            if UserExtraInfoModel.objects.filter(user=request.user).exists() is False:
+                return False
             user_info = request.user.user_extra_info
             if BaseUserModel.objects.filter(base_user=request.user).exists():
                 return user_info.is_approved and user_info.is_not_locked

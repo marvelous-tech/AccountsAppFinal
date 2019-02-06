@@ -4,7 +4,8 @@ from expenditure.api.serializers import (
     ExpenditureRecordModelSerializer,
     ExpenditureRecordModelSafeSerializer,
     ExpenditureRecordHistoryModelSerializer,
-    ExpenditureHeadingsHistoryModelSerializer
+    ExpenditureHeadingsHistoryModelSerializer,
+    ExpenditureRecordForGivinLoanModelSafeSerializer
 )
 from project import permissions
 from base_user.models import BaseUserModel
@@ -215,6 +216,96 @@ class ExpenditureRecordRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
             queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(is_deleted=False, is_for_refund=False)
         return queryset
+
+
+# Loan Giving
+
+
+class ExpenditureRecordForGivingLoanCreateAPIView(ExpenditureRecordCreateAPIView):
+
+    serializer_class = ExpenditureRecordForGivinLoanModelSafeSerializer
+    
+    def get_queryset(self):
+        queryset = None
+        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
+            queryset = self.request.user.base_user.all_expenditure_records.filter(
+                added__year=datetime.datetime.today().year,
+                is_deleted=False,
+                is_for_return=True
+                )
+        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
+            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
+                added__year=datetime.datetime.today().year,
+                is_deleted=False,
+                is_for_return=True
+                )
+        return queryset
+
+
+class ExpenditureRecordForGivingLoanListAPIView(ExpenditureRecordListAPIView):
+
+    serializer_class = ExpenditureRecordForGivinLoanModelSafeSerializer
+
+    def get_queryset(self):
+        queryset = None
+        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
+            queryset = self.request.user.base_user.all_expenditure_records.filter(
+                added__year=datetime.datetime.today().year,
+                is_deleted=False,
+                is_for_return=True
+                )
+        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
+            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
+                added__year=datetime.datetime.today().year,
+                is_deleted=False,
+                is_for_return=True
+                )
+        return queryset
+
+
+class ExpenditureRecordForGivingLoanRetrieveAPIView(ExpenditureRecordRetrieveAPIView):
+
+    serializer_class = ExpenditureRecordForGivinLoanModelSafeSerializer
+
+    def get_queryset(self):
+        queryset = None
+        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
+            queryset = self.request.user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=True
+                )
+        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
+            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=True
+                )
+        return queryset
+
+
+class ExpenditureRecordForGivingLoanRetrieveUpdateAPIView(ExpenditureRecordRetrieveUpdateAPIView):
+
+    serializer_class = ExpenditureRecordForGivinLoanModelSafeSerializer
+
+    def get_queryset(self):
+        queryset = None
+        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
+            queryset = self.request.user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=True
+                )
+        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
+            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
+                is_deleted=False,
+                is_for_refund=False,
+                is_for_return=True
+                )
+        return queryset
+
+
+# Loan Giving ---< END >---
 
 
 class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):

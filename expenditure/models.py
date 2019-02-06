@@ -71,22 +71,24 @@ class ExpenditureRecordModel(models.Model):
     is_deleted = models.BooleanField(default=False)
     is_for_refund = models.BooleanField(default=False)
 
+    is_for_return = models.BooleanField(default=False)
+
     def __str__(self):
         return self.added_by.username
 
 
 class ExpenditureRecordHistoryModel(models.Model):
     action_by = models.ForeignKey(User, on_delete=models.DO_NOTHING,
-                                  related_name='expenditure_records_history')
+                                    related_name='expenditure_records_history')
     base_user = models.ForeignKey(BaseUserModel, on_delete=models.DO_NOTHING,
-                                  related_name='all_expenditure_records_history')
+                                    related_name='all_expenditure_records_history')
 
     related_records = models.ForeignKey(ExpenditureRecordModel, on_delete=models.CASCADE, related_name="all_history")
 
     old_expend_heading = models.ForeignKey(ExpenditureHeadingModel,
-                                           on_delete=models.DO_NOTHING, related_name='old_all_records_history')
+                                            on_delete=models.DO_NOTHING, related_name='old_all_records_history')
     new_expend_heading = models.ForeignKey(ExpenditureHeadingModel,
-                                           on_delete=models.DO_NOTHING, related_name='new_all_records_history')
+                                            on_delete=models.DO_NOTHING, related_name='new_all_records_history')
 
     old_expend_by = models.CharField(max_length=100)
     new_expend_by = models.CharField(max_length=100)

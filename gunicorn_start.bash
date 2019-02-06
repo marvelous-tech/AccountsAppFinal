@@ -1,5 +1,8 @@
 NAME="django_app"
 DJANGODIR=/home/ubuntu/project
+SOCKFILE=/run/gunicorn.sock
+USER=ubuntu
+GROUP=ubuntu
 NUM_WORKERS=3
 DJANGO_SETTINGS_MODULE=project.settings
 DJANGO_WSGI_MODULE=project.wsgi
@@ -12,9 +15,11 @@ export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 
 # Start Django Gunicorn
 
-exec pipenv run gunicorn ${DJANGO_WSGI_MODULE}:application \
+exec /home/ubuntu/.local/bin/pipenv run gunicorn ${DJANGO_WSGI_MODULE}:application \
     --name $NAME \
     --workers $NUM_WORKERS \
-    --bind=8000:8000 \
+    --user=$USER --group=$GROUP \
+    --bind=unix:$SOCKFILE \
     --log-level=debug \
     --log-file=-
+

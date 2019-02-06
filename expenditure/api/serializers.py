@@ -21,7 +21,7 @@ class ExpenditureHeadingModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenditureHeadingModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added', 'updated', 'is_for_refund')
+        read_only_fields = ('uuid', 'added', 'updated')
 
     def request_data(self):
         return self.context['request']
@@ -135,7 +135,7 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_verified', 'is_for_refund')
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_verified', 'is_for_refund', 'is_for_return')
 
     def request_data(self):
         return self.context['request']
@@ -155,27 +155,19 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('extra_description')
         new_value = validated_data.get('amount')
-        expend_obj_non_ref = self.base_user_model().all_expenditure_records.all().filter(
-                                                                                         is_for_refund=False,
-                                                                                         is_deleted=False)
-        expend_obj_ref = self.base_user_model().all_expenditure_records.all().filter(
-                                                                                     is_for_refund=True,
-                                                                                     is_deleted=False)
-        credit_fund_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
 
-        all_credit_fund_amounts = [obj.amount for obj in credit_fund_obj]
-        all_record_amounts_ref = [obj.amount for obj in expend_obj_ref]
-        all_record_amounts_non_ref = [obj.amount for obj in expend_obj_non_ref]
+        expend_obj = self.base_user_model().all_expenditure_records.all().filter(is_deleted=False)
+        credit_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
 
-        total_pre_credit_fund_amount = utils.sum_int_of_array(all_credit_fund_amounts)
-        total_pre_record_amount_non_ref = utils.sum_int_of_array(all_record_amounts_non_ref)
-        total_pre_record_amount_ref = utils.sum_int_of_array(all_record_amounts_ref)
+        all_credit_amounts = [obj.amount for obj in credit_obj]
+        all_expend_amounts = [obj.amount for obj in expend_obj]
 
-        final_non_ref_expend = total_pre_record_amount_non_ref + new_value
+        total_pre_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+        total_pre_expend_amount = utils.sum_int_of_array(all_expend_amounts)
 
-        real_asset = total_pre_credit_fund_amount - total_pre_record_amount_ref
+        full_balance = total_pre_credit_amount - (total_pre_expend_amount + new_value)
 
-        if real_asset >= final_non_ref_expend:
+        if full_balance >= 0:
             obj = ExpenditureRecordModel.objects.create(
                 added_by=self.logged_in_user(),
                 base_user=self.base_user_model(),
@@ -216,27 +208,19 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
         if instance.is_deleted is True and validated_data.get('is_deleted') is False:
             # Todo: add history with is_restore = True
             raw_amount = instance.amount
-            expend_obj_non_ref = self.base_user_model().all_expenditure_records.all().filter(
-                                                                                             is_for_refund=False,
-                                                                                             is_deleted=False)
-            expend_obj_ref = self.base_user_model().all_expenditure_records.all().filter(
-                                                                                         is_for_refund=True,
-                                                                                         is_deleted=False)
-            credit_fund_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
 
-            all_credit_fund_amounts = [obj.amount for obj in credit_fund_obj]
-            all_record_amounts_ref = [obj.amount for obj in expend_obj_ref]
-            all_record_amounts_non_ref = [obj.amount for obj in expend_obj_non_ref]
+            expend_obj = self.base_user_model().all_expenditure_records.all().filter(is_deleted=False)
+            credit_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
 
-            total_pre_credit_fund_amount = utils.sum_int_of_array(all_credit_fund_amounts)
-            total_pre_record_amount_non_ref = utils.sum_int_of_array(all_record_amounts_non_ref)
-            total_pre_record_amount_ref = utils.sum_int_of_array(all_record_amounts_ref)
+            all_credit_amounts = [obj.amount for obj in credit_obj]
+            all_expend_amounts = [obj.amount for obj in expend_obj]
 
-            final_value_after_delete = total_pre_record_amount_non_ref - raw_amount
+            total_pre_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+            total_pre_expend_amount = utils.sum_int_of_array(all_expend_amounts)
 
-            real_asset = total_pre_credit_fund_amount - total_pre_record_amount_ref
+            full_balance = total_pre_credit_amount - (total_pre_expend_amount + raw_amount)
 
-            if real_asset >= final_value_after_delete:
+            if full_balance >= 0:
                 instance.is_deleted = False
                 ExpenditureRecordHistoryModel.objects.create(
                     action_by=self.logged_in_user(),
@@ -267,29 +251,19 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
 
         raw_amount = instance.amount
         new_amount = validated_data.get('amount', instance.amount)
-        test_amount = new_amount - raw_amount
 
-        expend_obj_non_ref = self.base_user_model().all_expenditure_records.all().filter(
-            is_for_refund=False,
-            is_deleted=False)
-        expend_obj_ref = self.base_user_model().all_expenditure_records.all().filter(
-            is_for_refund=True,
-            is_deleted=False)
-        credit_fund_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
+        expend_obj = self.base_user_model().all_expenditure_records.all().filter(is_deleted=False)
+        credit_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
 
-        all_credit_fund_amounts = [obj.amount for obj in credit_fund_obj]
-        all_record_amounts_ref = [obj.amount for obj in expend_obj_ref]
-        all_record_amounts_non_ref = [obj.amount for obj in expend_obj_non_ref]
+        all_credit_amounts = [obj.amount for obj in credit_obj]
+        all_expend_amounts = [obj.amount for obj in expend_obj]
 
-        total_pre_credit_fund_amount = utils.sum_int_of_array(all_credit_fund_amounts)
-        total_pre_record_amount_non_ref = utils.sum_int_of_array(all_record_amounts_non_ref)
-        total_pre_record_amount_ref = utils.sum_int_of_array(all_record_amounts_ref)
+        total_pre_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+        total_pre_expend_amount = utils.sum_int_of_array(all_expend_amounts)
 
-        final_value_after_delete = total_pre_record_amount_non_ref - test_amount
+        full_balance = total_pre_credit_amount - (total_pre_expend_amount - raw_amount + new_amount)
 
-        real_asset = total_pre_credit_fund_amount - total_pre_record_amount_ref
-
-        if real_asset >= final_value_after_delete:
+        if full_balance >= 0:
             # Todo: add history with is_updated = True
             ExpenditureRecordHistoryModel.objects.create(
                 action_by=self.logged_in_user(),
@@ -333,13 +307,245 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
     def get_added_by(obj):
         return obj.added_by.__str__()
 
+class ExpenditureRecordForGivinLoanModelSafeSerializer(ExpenditureRecordModelSafeSerializer):
+        edit_url = serializers.HyperlinkedIdentityField(
+            view_name='expenditure_app:loan_giving_view_update_delete',
+            lookup_field='uuid'
+        )
+
+        details_url = serializers.HyperlinkedIdentityField(
+            view_name='expenditure_app:loan_giving_view',
+            lookup_field='uuid'
+        )
+
+        def create(self, validated_data):
+            validated_data.pop('extra_description')
+            new_value = validated_data.get('amount')
+
+            # General Operation
+
+            expend_obj = self.base_user_model().all_expenditure_records.all().filter(is_deleted=False)
+            credit_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
+
+            all_credit_amounts = [obj.amount for obj in credit_obj]
+            all_expend_amounts = [obj.amount for obj in expend_obj]
+
+            total_pre_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+            total_pre_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+
+            full_balance = total_pre_credit_amount - (total_pre_expend_amount + new_value)
+
+            # For Specific Operation
+
+            expend_obj_ret = self.base_user_model().all_expenditure_records.all().filter(
+                is_deleted=False,
+                is_for_return=True,
+                is_for_refund=False,
+                )
+            credit_obj_ret = self.base_user_model().credit_funds.filter(
+                is_deleted=False,
+                is_returnable=True,
+                is_refundable=False,
+                )
+
+            all_credit_amounts_ret = [obj.amount for obj in credit_obj_ret]
+            all_expend_amounts_ret = [obj.amount for obj in expend_obj_ret]
+
+            total_pre_credit_amount_ret = utils.sum_int_of_array(all_credit_amounts_ret)
+            total_pre_expend_amount_ret = utils.sum_int_of_array(all_expend_amounts_ret)
+
+            ret_balance = total_pre_credit_amount_ret - (total_pre_expend_amount_ret + new_value)
+
+            if full_balance >= 0 and ret_balance >= 0:
+                obj = ExpenditureRecordModel.objects.create(
+                    added_by=self.logged_in_user(),
+                    base_user=self.base_user_model(),
+                    uuid=uuid.uuid4(),
+                    is_for_return=True,
+                    **validated_data
+                )
+                return obj
+            raise serializers.ValidationError(detail='Credit Fund will be exceed! So you cannot add any more records. After authority add more Credit Fund in Database you can entry more records.')
+
+        def update(self, instance, validated_data):
+            if instance.is_deleted is False and validated_data.get('is_deleted') is True:
+                instance.is_deleted = True
+                # Todo: add history with is_deleted = True
+                ExpenditureRecordHistoryModel.objects.create(
+                    action_by=self.logged_in_user(),
+                    base_user=self.base_user_model(),
+                    related_records=instance,
+                    old_expend_heading=instance.expend_heading,
+                    new_expend_heading=instance.expend_heading,
+                    old_expend_by=instance.expend_by,
+                    new_expend_by=instance.expend_by,
+                    old_description=instance.description,
+                    new_description=instance.description,
+                    old_amount=instance.amount,
+                    new_amount=instance.amount,
+                    old_is_verified=instance.is_verified,
+                    new_is_verified=instance.is_verified,
+                    old_expend_date=instance.expend_date,
+                    new_expend_date=instance.expend_date,
+                    old_uuid=instance.uuid,
+                    is_updated=False,
+                    is_deleted=True,
+                    is_restored=False,
+                    description=validated_data.get('extra_description'),
+                )
+                instance.save()
+                return instance
+            if instance.is_deleted is True and validated_data.get('is_deleted') is False:
+                # Todo: add history with is_restore = True
+                raw_amount = instance.amount
+
+                expend_obj = self.base_user_model().all_expenditure_records.all().filter(is_deleted=False)
+                credit_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
+
+                all_credit_amounts = [obj.amount for obj in credit_obj]
+                all_expend_amounts = [obj.amount for obj in expend_obj]
+
+                total_pre_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+                total_pre_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+
+                full_balance = total_pre_credit_amount - (total_pre_expend_amount + raw_amount)
+
+                # For Specific Operation
+
+                expend_obj_ret = self.base_user_model().all_expenditure_records.all().filter(
+                    is_deleted=False,
+                    is_for_return=True,
+                    is_for_refund=False,
+                    )
+                credit_obj_ret = self.base_user_model().credit_funds.filter(
+                    is_deleted=False,
+                    is_returnable=True,
+                    is_refundable=False,
+                    )
+
+                all_credit_amounts_ret = [obj.amount for obj in credit_obj_ret_ret]
+                all_expend_amounts_ret = [obj.amount for obj in expend_obj_ret]
+
+                total_pre_credit_amount_ret = utils.sum_int_of_array(all_credit_amounts_ret)
+                total_pre_expend_amount_ret = utils.sum_int_of_array(all_expend_amounts_ret)
+
+                ret_balance = total_pre_credit_amount_ret - (total_pre_expend_amount_ret + raw_amount)
+
+                if full_balance >= 0 and ret_balance >= 0:
+                    instance.is_deleted = False
+                    ExpenditureRecordHistoryModel.objects.create(
+                        action_by=self.logged_in_user(),
+                        base_user=self.base_user_model(),
+                        related_records=instance,
+                        old_expend_heading=instance.expend_heading,
+                        new_expend_heading=instance.expend_heading,
+                        old_expend_by=instance.expend_by,
+                        new_expend_by=instance.expend_by,
+                        old_description=instance.description,
+                        new_description=instance.description,
+                        old_amount=instance.amount,
+                        new_amount=instance.amount,
+                        old_is_verified=instance.is_verified,
+                        new_is_verified=instance.is_verified,
+                        old_expend_date=instance.expend_date,
+                        new_expend_date=instance.expend_date,
+                        old_uuid=instance.uuid,
+                        is_updated=False,
+                        is_deleted=False,
+                        is_restored=True,
+                        description=validated_data.get('extra_description'),
+                    )
+                    instance.save()
+                    return instance
+                raise serializers.ValidationError(
+                    detail='Credit Fund will be exceede! So you cannot add any more records. After authority add more Credit Fund in Database you can entry more records.')
+
+            raw_amount = instance.amount
+            new_amount = validated_data.get('amount', instance.amount)
+
+            expend_obj = self.base_user_model().all_expenditure_records.all().filter(is_deleted=False)
+            credit_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
+
+            all_credit_amounts = [obj.amount for obj in credit_obj]
+            all_expend_amounts = [obj.amount for obj in expend_obj]
+
+            total_pre_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+            total_pre_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+
+            full_balance = total_pre_credit_amount - (total_pre_expend_amount + raw_amount)
+
+            # For Specific Operation
+
+            expend_obj_ret = self.base_user_model().all_expenditure_records.all().filter(
+                is_deleted=False,
+                is_for_return=True,
+                is_for_refund=False,
+                )
+            credit_obj_ret = self.base_user_model().credit_funds.filter(
+                is_deleted=False,
+                is_returnable=True,
+                is_refundable=False,
+                )
+
+            all_credit_amounts_ret = [obj.amount for obj in credit_obj_ret_ret]
+            all_expend_amounts_ret = [obj.amount for obj in expend_obj_ret]
+
+            total_pre_credit_amount_ret = utils.sum_int_of_array(all_credit_amounts_ret)
+            total_pre_expend_amount_ret = utils.sum_int_of_array(all_expend_amounts_ret)
+
+            ret_balance = total_pre_credit_amount_ret - (total_pre_expend_amount_ret - raw_amount + new_amount)
+
+            if full_balance >= 0 and ret_balance >= 0:
+                # Todo: add history with is_updated = True
+                ExpenditureRecordHistoryModel.objects.create(
+                    action_by=self.logged_in_user(),
+                    base_user=self.base_user_model(),
+                    related_records=instance,
+                    old_expend_heading=instance.expend_heading,
+                    new_expend_heading=validated_data.get('expend_heading'),
+                    old_expend_by=instance.expend_by,
+                    new_expend_by=validated_data.get('expend_by'),
+                    old_description=instance.description,
+                    new_description=validated_data.get('description'),
+                    old_amount=instance.amount,
+                    new_amount=validated_data.get('amount'),
+                    old_is_verified=instance.is_verified,
+                    new_is_verified=validated_data.get('is_verified'),
+                    old_expend_date=instance.expend_date,
+                    new_expend_date=validated_data.get('expend_date'),
+                    old_uuid=instance.uuid,
+                    is_updated=True,
+                    is_deleted=False,
+                    is_restored=False,
+                    description=validated_data.get('extra_description'),
+                )
+                instance.expend_heading = validated_data.get('expend_heading', instance.expend_heading)
+                instance.expend_by = validated_data.get('expend_by', instance.expend_by)
+                instance.description = validated_data.get('description', instance.description)
+                instance.amount = validated_data.get('amount', instance.amount)
+                instance.expend_date = validated_data.get('expend_date', instance.expend_date)
+                instance.is_verified = validated_data.get('is_verified', instance.is_verified)
+
+                instance.save()
+
+                return instance
+            raise serializers.ValidationError(detail='Credit Fund will be exceede! So you cannot add any more records. After authority add more Credit Fund in Database you can entry more records.')
+
+        @staticmethod
+        def get_expend_heading_name(obj):
+            return obj.expend_heading.__str__()
+        
+        @staticmethod
+        def get_added_by(obj):
+            return obj.added_by.__str__()
+
 
 class ExpenditureRecordModelSerializer(ExpenditureRecordModelSafeSerializer):
 
     class Meta:
         model = ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund')
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return')
 
 
 class ExpenditureHeadingsHistoryModelSerializer(serializers.ModelSerializer):

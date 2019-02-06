@@ -34,6 +34,8 @@ class CreditFundModel(models.Model):
     is_deleted = models.BooleanField(default=False)
     is_refundable = models.BooleanField(default=False)
 
+    is_returnable = models.BooleanField(default=False)
+
     def __str__(self):
         return self.source.source_name
 
@@ -50,9 +52,9 @@ class CreditFundSourceHistoryModel(models.Model):
     action_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="all_credit_fund_source_histories")
 
     base_user = models.ForeignKey(BaseUserModel, on_delete=models.DO_NOTHING,
-                                  related_name="all_credit_fund_source_histories")
+                                    related_name="all_credit_fund_source_histories")
     credit_fund_source = models.ForeignKey(CreditFundSourceModel, on_delete=models.CASCADE,
-                                           related_name="all_histories")
+                                            related_name="all_histories")
 
     is_deleted = models.BooleanField(default=False)
     is_updated = models.BooleanField(default=False)
