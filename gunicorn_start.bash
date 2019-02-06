@@ -15,7 +15,7 @@ export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 
 # Start Django Gunicorn
 
-exec /usr/loacl/bin/pipenv run gunicorn ${DJANGO_WSGI_MODULE}:application \
+exec /home/ubuntu/.local/bin/pipenv run gunicorn ${DJANGO_WSGI_MODULE}:application \
     --name $NAME \
     --workers $NUM_WORKERS \
     --user=$USER --group=$GROUP \
