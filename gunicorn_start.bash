@@ -12,10 +12,9 @@ export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 
 # Start Django Gunicorn
 
-exec /home/ubuntu/.local/bin/pipenv run gunicorn ${DJANGO_WSGI_MODULE}:application \
+exec pipenv run gunicorn ${DJANGO_WSGI_MODULE}:application \
     --name $NAME \
     --workers $NUM_WORKERS \
     --bind=8000:8000 \
     --log-level=debug \
     --log-file=-
-

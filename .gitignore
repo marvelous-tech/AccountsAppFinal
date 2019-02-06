@@ -2,6 +2,11 @@
 __pycache__/ *.py[cod] 
 *$py.class
 *.pyc  
+.idea/
+.vscode/
+pgdata/
+docker*.yml
+Dockerfile*
 
 # C extensions 
 *.so  
