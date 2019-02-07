@@ -193,16 +193,12 @@ class CreditLoanRecieveRecordListAPIView(CreditFundListAPIView):
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
             return self.request.user.base_user.credit_funds.filter(
                 added__year=datetime.datetime.today().year,
-                is_deleted=False,
-                is_refundable=False,
-                is_returnable=True
+                is_deleted=False
                 )
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
             return self.request.user.root_sub_user.base_user.credit_funds.filter(
                 added__year=datetime.datetime.today().year,
-                is_deleted=False,
-                is_refundable=False,
-                is_returnable=True
+                is_deleted=False
                 )
 
 

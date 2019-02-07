@@ -143,6 +143,13 @@ CORS_ORIGIN_WHITELIST = (
     '103.110.217.173'
 )
 
+if DEBUG:
+    CORS_ORIGIN_WHITELIST = (
+    '192.168.1.240',
+    '103.110.217.173',
+    'localhost:4200'
+    )
+
 CORS_ALLOW_METHODS = (
     'GET',
     'OPTIONS',

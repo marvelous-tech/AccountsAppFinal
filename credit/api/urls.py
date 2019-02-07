@@ -21,8 +21,8 @@ urlpatterns = [
         path('loan-recieve/', include([
             path('list/', views.CreditLoanRecieveRecordListAPIView.as_view(), name="fund_loan_recieve_list"),
             path('list-add/', views.CreditLoanRecieveRecordListCreateAPIView.as_view(), name="fund_loan_recieve_list_add"),
-            path('view-update-delete/<uuid:uuid>/', views.CreditLoanRecieveRecordRetrieveAPIView.as_view(), name="fund_loan_recieve_view_update_delete"),
-            path('view/<uuid:uuid>/', views.CreditLoanRecieveRecordRetrieveUpdateAPIView.as_view(), name="fund_loan_recieve_view")
+            path('view/<uuid:uuid>/', views.CreditLoanRecieveRecordRetrieveAPIView.as_view(), name="fund_loan_recieve_view"),
+            path('view-update-delete/<uuid:uuid>/', views.CreditLoanRecieveRecordRetrieveUpdateAPIView.as_view(), name="fund_loan_recieve_view_update_delete"),
         ])),
         path('history/', views.CreditFundHistory.as_view(), name='fund_history'),
         path('mail-csv/', views.CreditFundGenCSVEmail.as_view()),
