@@ -23,6 +23,8 @@ django-extensions = "*"
 django-rest-multiple-models = "*"
 psycopg2 = "*"
 gunicorn = "*"
+whitenoise = "*"
+uwsgi = "*"
 
 [requires]
 python_version = "3"
