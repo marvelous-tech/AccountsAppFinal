@@ -22,7 +22,7 @@ class CreditFundSourceListCreateAPIView(generics.ListCreateAPIView):
     ordering = ('-id',)
 
     def get_queryset(self):
-        return self.request.user.base_user.credit_fund_sources.all()
+        return self.request.user.base_user.credit_fund_sources.filter(is_deleted=False)
 
 
 class CreditFundSourceListAPIView(generics.ListAPIView):
@@ -35,9 +35,9 @@ class CreditFundSourceListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            return self.request.user.base_user.credit_fund_sources.all()
+            return self.request.user.base_user.credit_fund_sources.filter(is_deleted=False)
         elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            return self.request.user.root_sub_user.base_user.credit_fund_sources.all()
+            return self.request.user.root_sub_user.base_user.credit_fund_sources.filter(is_deleted=False)
 
 
 class CreditFundsAccordingToSourcesListAPIView(CreditFundSourceListCreateAPIView):
@@ -53,7 +53,7 @@ class CreditFundSourceRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     lookup_field = 'uuid'
 
     def get_queryset(self):
-        return self.request.user.base_user.credit_fund_sources.all()
+        return self.request.user.base_user.credit_fund_sources.filter(is_deleted=False)
 
 
 class CreditFundListCreateAPIView(generics.ListCreateAPIView):
