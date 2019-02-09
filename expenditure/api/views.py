@@ -430,7 +430,6 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
         expend_obj_ref_or_ret = self.get_expend_records().filter(
             Q(is_verified=True),
             Q(expend_date=datetime.date.today()),
-            sad
             Q(is_for_refund=True) | Q(is_for_return=True)
             )
 
@@ -444,6 +443,7 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
         this_year_total_credit_amount = utils.sum_int_of_array(all_credit_amounts)
 
         today_total_credit_fund_amount = this_year_total_credit_amount - this_year_total_expend_amount
+        print(today_total_credit_fund_amount)
 
         return today_total_credit_fund_amount
     
