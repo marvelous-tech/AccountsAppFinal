@@ -495,26 +495,42 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
         todays_open_credit_fund = total_credit_amount - total_expend_amount
 
         return todays_open_credit_fund
+    
+    def get_todays_open_debit_amount(self):
+        expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(expend_date__lt=datetime.date.today()),
+            Q(is_for_refund=False),
+            Q(is_for_return=False)
+            )
+        all_expend_amounts = [obj.amount for obj in expend_obj_non_ref_and_non_ret]
+
+        todays_open_debit_amount = utils.sum_int_of_array(all_expend_amounts)
+
+        return todays_open_debit_amount
 
 
     def get(self, request, *args, **kwargs):
 
         base_user = self.get_base_user()
         company = CompanyInfoModel.objects.get(base_user=base_user)
+        print(self.get_today_total_credit_fund_amount())
 
         context = {
             'company': company,
             'pdf_name': f'Expenditure {today}',
             'date': datetime.datetime.now(),
             'page_unique_id': uuid.uuid4(),
-            'credit_items': self.get_credit_funds().filter(Q(fund_added=datetime.datetime.now().date)),
+            'credit_items': self.get_credit_funds().filter(Q(fund_added=datetime.date.today())),
             'debit_items': self.get_expend_records().filter(
-                Q(expend_date=datetime.datetime.now().date),
+                Q(expend_date=datetime.date.today()),
                 is_verified=True
                 ),
             'total_credit_amount': self.get_today_total_credit_fund_amount(),
             'total_debit_amount': self.get_today_total_expend_amount(),
-            'total_remaining_balance': self.get_remaining_credit_fund_amount()
+            'total_remaining_balance': self.get_remaining_credit_fund_amount(),
+            'last_credit_amount': self.get_todays_open_credit_fund(),
+            'last_debit_amount': self.get_todays_open_debit_amount()
         }
 
         pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)

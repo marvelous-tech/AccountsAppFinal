@@ -58,14 +58,14 @@
 
         .heads {
             background-color: #d4e1f4;
-            color: balck;
+            color: black;
         }
 
         table,
         th,
         td {
             border: 1px solid black;
-            padding: 5px;
+            padding: 4px 1px auto 1px;
             text-align: center;
         }
 
@@ -75,8 +75,7 @@
 
         .info {
             background-color: #4299fd;
-            padding: 10px;
-            font-size: 20px;
+            font-size: 12px;
             color: white;
         }
 
@@ -102,7 +101,6 @@
             {{ company.name }}
         </h1>
         <p style="text-align: center">{{ company.address }}</p>
-        <p>Generated at {{ date }}</p>
         <hr>
     </div>
 
@@ -118,13 +116,13 @@
 
     <div>
         <h5>Expenditure Records Report in {{ date | date }}</h5>
-        <p>Generated at {{ date }}</p>
+        <h5>Before today total Credit:  {{ last_credit_amount }}</h5>
+        <h5>Before today total Debit:  {{ last_debit_amount }}</h5>
         <h2 class="lead">Credit Records</h2>
-        <hr>
         <table>
             <thead>
                 <tr>
-                    <th colspan="4" class="info">Total Credit Amount: {{ total_credit_amount }} TAKA.</th>
+                    <th colspan="4" class="info">Total Credit Amount: {{ total_credit_amount }} TAKA</th>
                 </tr>
                 <tr class="heads">
                     <th>Credit Head</th>
@@ -139,22 +137,20 @@
                     <td>{{ data.source | title }}</td>
                     <td>{{ data.amount }}</td>
                     <td>{{ data.description }}</td>
-                    <td>{{ data.fund_added | date }}</td>
+                    <td>{{ data.fund_added }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <div class="gap"></div>
-        <h2 class="lead">Debit Records</h2>
-        <hr>
+        <h2 style="margin-top: 40px" class="lead">Debit Records</h2>
         <table>
             <thead>
                 <tr>
-                    <th colspan="6" class="info">Total Debit Amount: {{ total_debit_amount }} TAKA.</th>
+                    <th colspan="6" class="info">Total Debit Amount: {{ total_debit_amount }} TAKA</th>
                 </tr>
                 <tr class="heads">
                     <th>Debit Head</th>
-                    <th>Debit Amount (In Taka)</th>
+                    <th>Debit Amount (In Tk)</th>
                     <th>Debit Description</th>
                     <th>Expended By</th>
                     <th>Added By</th>
@@ -169,22 +165,20 @@
                     <td>{{ data.description }}</td>
                     <td>{{ data.expend_by | title }}</td>
                     <td>{{ data.added_by | title }}</td>
-                    <td>{{ data.expend_date | date }}</td>
+                    <td>{{ data.expend_date }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <div class="gap"></div>
-        <h2 class="lead">Grand Total</h2>
-        <hr>
+        <h2 style="margin-top: 40px" class="lead">Grand Total</h2>
         <table>
-            <thead>
-                <tr class="info">
-                    <th>Total Credit Amount: {{ total_credit_amount }}</th>
-                    <th>Total Debit Amount: {{ total_debit_amount }}</th>
-                    <th>Total Balance Amount: {{ total_remaining_balance }}</th>
+            <tbody>
+                <tr>
+                    <td>Total Credit: {{ total_credit_amount }} TAKA</td>
+                    <td>Total Debit: {{ total_debit_amount }} TAKA</td>
+                    <td>Total Balance: {{ total_remaining_balance }} TAKA</td>
                 </tr>
-            </thead>
+            </tbody>
         </table>
     </div>
 </body>
