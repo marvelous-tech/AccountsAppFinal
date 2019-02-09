@@ -342,75 +342,6 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
     mimetype = 'text/csv'
     from_email = os.environ['EMAIL']
 
-    def get(self, request, *args, **kwargs):
-        items = self.filter_queryset(queryset=self.get_queryset().filter(added__date=today))
-        file_name = f'expenditure_records_of_{today}.csv'
-        response = utils.django_download_generated_csv_from_model_object(file_name, items, self.headings, self.attributes)
-        subject = f'Accounts Application: Today - {today} - Checkout'
-        body = f'''
-        This is an automated e-mail from your application.
-        Your daily expenditure records in {datetime.datetime.today().strftime("%d %B, %Y")}
-        '''
-        base_user = self.get_base_user()
-
-        emails = base_user.all_emails.filter(is_active=True)
-        to = [base_user.base_user.email, ]
-
-        for email in emails:
-            to.append(email.email_address)
-
-        content = response.getvalue()
-        utils.django_send_email_with_attachments(subject, body, self.from_email, to, file_name, content, self.mimetype)
-        # Generate PDF
-        '''
-        company = CompanyInfoModel.objects.get(base_user=base_user)
-        row_values = [[obj.__getattribute__(name) for name in self.attributes] for obj in items]
-        amounts = [obj.amount for obj in items]
-        sum = utils.sum_int_of_array(amounts)
-        context = {
-            'headings': self.headings,
-            'company': company,
-            'row_values': row_values,
-            'pdf_name': f'Expenditure {today}',
-            'date': datetime.datetime.now(),
-            'sum': sum,
-            'page_unique_id': uuid.uuid4()
-        }
-        pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)
-        '''
-        return response
-
-    def post(self, request, *args, **kwargs):
-        return Response(data={'detail': 'Not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED, exception=True)
-
-
-class ExpenditureRecordEmailCSV(ExpenditureCheckoutToday):
-
-    def get(self, request, *args, **kwargs):
-        items = self.filter_queryset(queryset=self.get_queryset())
-        file_name = f'{today}_expenditure_record.csv'
-        response = utils.django_download_generated_csv_from_model_object(
-            file_name=file_name, query_set=items,
-            headings=self.headings, attributes=self.attributes
-        )
-        subject = f'Accounts Application: All expenditure records (Generated {today}).'
-        body = 'This is an automated e-mail from your application. Your files are given below.'
-        base_user = self.get_base_user()
-
-        emails = base_user.all_emails.filter(is_active=True)
-        to = [base_user.base_user.email, ]
-
-        for email in emails:
-            to.append(email.email_address)
-
-        content = response.getvalue()
-        utils.django_send_email_with_attachments(subject, body, self.from_email, to, file_name, content, self.mimetype)
-
-        return response
-
-
-class ExpenditureRenderPDF(ExpenditureCheckoutToday):
-
     def get_base_user(self):
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
             return self.request.user.base_user
@@ -423,19 +354,16 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
     def get_expend_records(self):
         return self.get_base_user().all_expenditure_records.filter(is_deleted=False)
     
-    def get_today_total_credit_fund_amount(self):  # OK
+    def get_total_credit_amount(self):  # OK
 
         # Todo: Check if this algorithm has a mathmetical error in total credit amount
 
         expend_obj_ref_or_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date=datetime.date.today()),
             Q(is_for_refund=True) | Q(is_for_return=True)
             )
 
-        credit_obj = self.get_credit_funds().filter(
-            Q(fund_added=datetime.date.today())
-            )
+        credit_obj = self.get_credit_funds()
         all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
         all_credit_amounts = [obj.amount for obj in credit_obj]
 
@@ -447,10 +375,9 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
 
         return today_total_credit_fund_amount
     
-    def get_today_total_expend_amount(self):
+    def get_total_expend_amount(self):
         expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date=datetime.date.today()),
             Q(is_for_refund=False),
             Q(is_for_return=False)
             )
@@ -508,13 +435,62 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
         todays_open_debit_amount = utils.sum_int_of_array(all_expend_amounts)
 
         return todays_open_debit_amount
+    
+    def get_today_credit_fund(self):
+        expend_obj_ref_or_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(expend_date=datetime.date.today()),
+            Q(is_for_refund=True) | Q(is_for_return=True)
+            )
 
+        credit_obj = self.get_credit_funds().filter(
+            Q(fund_added=datetime.date.today())
+            )
+
+        all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
+        all_credit_amounts = [obj.amount for obj in credit_obj]
+
+        total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
+        total_credit_amount = utils.sum_int_of_array(all_credit_amounts)
+
+        todays_open_credit_fund = total_credit_amount - total_expend_amount
+
+        return todays_open_credit_fund
+    
+    def get_today_debit_amount(self):
+        expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
+            Q(is_verified=True),
+            Q(expend_date=datetime.date.today()),
+            Q(is_for_refund=False),
+            Q(is_for_return=False)
+            )
+        all_expend_amounts = [obj.amount for obj in expend_obj_non_ref_and_non_ret]
+
+        todays_open_debit_amount = utils.sum_int_of_array(all_expend_amounts)
+
+        return todays_open_debit_amount
 
     def get(self, request, *args, **kwargs):
-
+        items = self.filter_queryset(queryset=self.get_queryset().filter(added__date=today))
+        file_name = f'expenditure_records_of_{today}.csv'
+        response = utils.django_download_generated_csv_from_model_object(file_name, items, self.headings, self.attributes)
+        subject = f'Accounts Application: Today - {today} - Checkout'
+        body = f'''
+        This is an automated e-mail from your application.
+        Your daily expenditure records in {datetime.datetime.today().strftime("%d %B, %Y")}
+        '''
         base_user = self.get_base_user()
+
+        emails = base_user.all_emails.filter(is_active=True)
+        to = [base_user.base_user.email, ]
+
+        for email in emails:
+            to.append(email.email_address)
+
+        content = response.getvalue()
+        utils.django_send_email_with_attachments(subject, body, self.from_email, to, file_name, content, self.mimetype)
+        # Generate PDF
         company = CompanyInfoModel.objects.get(base_user=base_user)
-        print(self.get_today_total_credit_fund_amount())
 
         context = {
             'company': company,
@@ -526,11 +502,69 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
                 Q(expend_date=datetime.date.today()),
                 is_verified=True
                 ),
-            'total_credit_amount': self.get_today_total_credit_fund_amount(),
-            'total_debit_amount': self.get_today_total_expend_amount(),
+            'total_credit_amount': self.get_total_credit_amount(),
+            'total_debit_amount': self.get_total_expend_amount(),
             'total_remaining_balance': self.get_remaining_credit_fund_amount(),
             'last_credit_amount': self.get_todays_open_credit_fund(),
             'last_debit_amount': self.get_todays_open_debit_amount()
+        }
+
+        pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)
+        return pdf
+
+    def post(self, request, *args, **kwargs):
+        return Response(data={'detail': 'Not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED, exception=True)
+
+
+class ExpenditureRecordEmailCSV(ExpenditureCheckoutToday):
+
+    def get(self, request, *args, **kwargs):
+        items = self.filter_queryset(queryset=self.get_queryset())
+        file_name = f'{today}_expenditure_record.csv'
+        response = utils.django_download_generated_csv_from_model_object(
+            file_name=file_name, query_set=items,
+            headings=self.headings, attributes=self.attributes
+        )
+        subject = f'Accounts Application: All expenditure records (Generated {today}).'
+        body = 'This is an automated e-mail from your application. Your files are given below.'
+        base_user = self.get_base_user()
+
+        emails = base_user.all_emails.filter(is_active=True)
+        to = [base_user.base_user.email, ]
+
+        for email in emails:
+            to.append(email.email_address)
+
+        content = response.getvalue()
+        utils.django_send_email_with_attachments(subject, body, self.from_email, to, file_name, content, self.mimetype)
+
+        return response
+
+
+class ExpenditureRenderPDF(ExpenditureCheckoutToday):
+
+    def get(self, request, *args, **kwargs):
+
+        base_user = self.get_base_user()
+        company = CompanyInfoModel.objects.get(base_user=base_user)
+
+        context = {
+            'company': company,
+            'pdf_name': f'Expenditure {today}',
+            'date': datetime.datetime.now(),
+            'page_unique_id': uuid.uuid4(),
+            'credit_items': self.get_credit_funds().filter(Q(fund_added=datetime.date.today())),
+            'debit_items': self.get_expend_records().filter(
+                Q(expend_date=datetime.date.today()),
+                is_verified=True
+                ),
+            'total_credit_amount': self.get_total_credit_amount(),
+            'total_debit_amount': self.get_total_expend_amount(),
+            'total_remaining_balance': self.get_remaining_credit_fund_amount(),
+            'last_credit_amount': self.get_todays_open_credit_fund(),
+            'last_debit_amount': self.get_todays_open_debit_amount(),
+            'today_credit_amount': self.get_today_credit_fund(),
+            'today_debit_amount': self.get_today_debit_amount()
         }
 
         pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)

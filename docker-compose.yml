@@ -7,6 +7,7 @@ services:
     image: postgres:alpine
     volumes: 
       - pgdata:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql
     environment:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_USER: "postgres"
@@ -23,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    command: pipenv run gunicorn project.wsgi:application --workers 3 -b 0.0.0.0:8000 --log-level=debug --log-file=-
+    command: pipenv run python manage.py runserver 0.0.0.0:8000
     depends_on:
       - db
     volumes:
