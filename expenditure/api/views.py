@@ -506,14 +506,14 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
             'pdf_name': f'Expenditure {today}',
             'date': datetime.datetime.now(),
             'page_unique_id': uuid.uuid4(),
-            'credit_items': this.get_credit_funds().filter(Q(fund_added=datetime.datetime.now().date)),
-            'debit_items': this.get_expend_records().filter(
+            'credit_items': self.get_credit_funds().filter(Q(fund_added=datetime.datetime.now().date)),
+            'debit_items': self.get_expend_records().filter(
                 Q(expend_date=datetime.datetime.now().date),
                 is_verified=True
                 ),
-            'total_credit_amount': this.get_today_total_credit_fund_amount(),
-            'total_debit_amount': this.get_today_total_expend_amount(),
-            'total_remaining_balance': this.get_remaining_credit_fund_amount()
+            'total_credit_amount': self.get_today_total_credit_fund_amount(),
+            'total_debit_amount': self.get_today_total_expend_amount(),
+            'total_remaining_balance': self.get_remaining_credit_fund_amount()
         }
 
         pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)
