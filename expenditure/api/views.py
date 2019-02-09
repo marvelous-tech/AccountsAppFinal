@@ -430,6 +430,7 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
         expend_obj_ref_or_ret = self.get_expend_records().filter(
             Q(is_verified=True),
             Q(expend_date=datetime.date.today()),
+            sad
             Q(is_for_refund=True) | Q(is_for_return=True)
             )
 
