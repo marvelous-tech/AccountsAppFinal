@@ -47,25 +47,48 @@
             top: 70px;
         }
 
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .heads {
+            background-color: #d4e1f4;
+            color: balck;
+        }
+
         table,
         th,
         td {
-            width: 100%;
-            border: 1px solid #555;
+            border: 1px solid black;
+            padding: 5px;
+            text-align: center;
         }
 
-        th,
-        td {
-            height: 15pt;
-            margin: 0px;
-            padding-top: 2pt;
+        .lead {
             text-align: center;
-            vertical-align: middle;
         }
+
+        .info {
+            background-color: #4299fd;
+            padding: 10px;
+            font-size: 20px;
+            color: white;
+        }
+
+        .gap {
+            min-height: 40px;
+        }
+
         .error {
             background-color: #ffa4a2;
             color: #444;
         }
+
         .good {
             color: #333;
         }
@@ -79,6 +102,7 @@
             {{ company.name }}
         </h1>
         <p style="text-align: center">{{ company.address }}</p>
+        <p>Generated at {{ date }}</p>
         <hr>
     </div>
 
@@ -87,48 +111,80 @@
         <hr>
         All signatures of the authority must include!
         (c) - page <pdf:pagenumber> of <pdf:pagecount>
-        
-            <p style="color: #bf360c;">Total Amount: <b>{{ sum }} Taka</b></p>
+
+                <p>Generated at {{ date }}</p>
                 <p>Page ID: <b>{{ page_unique_id }}</b></p>
     </div>
 
     <div>
         <h5>Expenditure Records Report in {{ date | date }}</h5>
         <p>Generated at {{ date }}</p>
+        <h2 class="lead">Credit Records</h2>
+        <hr>
         <table>
             <thead>
                 <tr>
-                    <td colspan="6"><h5 style="color: #bf360c;">Total amount: {{ sum }} Taka</h5></td>
+                    <th colspan="4" class="info">Total Credit Amount: {{ total_credit_amount }} TAKA.</th>
                 </tr>
-                <tr>
-                    {% for heading in headings %}
-                    <th style="background-color: #80deea;">{{ heading }}</th>
-                    {% endfor %}
+                <tr class="heads">
+                    <th>Credit Head</th>
+                    <th>Credit Amount (In Taka)</th>
+                    <th>Credit Description</th>
+                    <th>Added Date</th>
                 </tr>
             </thead>
             <tbody>
-                {% for data in items %}
-                    {% if data.is_verified is False %}
-                        <tr>
-                            <td class="error">{{ data.expend_heading }}</td>
-                            <td class="error">{{ data.added_by }}</td>
-                            <td class="error">{{ data.expend_by }}</td>
-                            <td class="error">{{ data.amount }}</td>
-                            <td class="error">{{ data.expend_date }}</td>
-                            <td class="error">{{ data.added | date }}</td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td class="good">{{ data.expend_heading }}</td>
-                            <td class="good">{{ data.added_by }}</td>
-                            <td class="good">{{ data.expend_by }}</td>
-                            <td class="good">{{ data.amount }}</td>
-                            <td class="good">{{ data.expend_date }}</td>
-                            <td class="good">{{ data.added | date }}</td>
-                        </tr>
-                    {% endif %}
+                {% for data in credit_items %}
+                <tr>
+                    <td>{{ data.source | title }}</td>
+                    <td>{{ data.amount }}</td>
+                    <td>{{ data.description }}</td>
+                    <td>{{ data.fund_added | date }}</td>
+                </tr>
                 {% endfor %}
             </tbody>
+        </table>
+        <div class="gap"></div>
+        <h2 class="lead">Debit Records</h2>
+        <hr>
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="6" class="info">Total Debit Amount: {{ total_debit_amount }} TAKA.</th>
+                </tr>
+                <tr class="heads">
+                    <th>Debit Head</th>
+                    <th>Debit Amount (In Taka)</th>
+                    <th>Debit Description</th>
+                    <th>Expended By</th>
+                    <th>Added By</th>
+                    <th>Expend Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in debit_items %}
+                <tr>
+                    <td>{{ data.heading | title }}</td>
+                    <td>{{ data.amount }}</td>
+                    <td>{{ data.description }}</td>
+                    <td>{{ data.expend_by | title }}</td>
+                    <td>{{ data.added_by | title }}</td>
+                    <td>{{ data.expend_date | date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="gap"></div>
+        <h2 class="lead">Grand Total</h2>
+        <hr>
+        <table>
+            <thead>
+                <tr class="info">
+                    <th>Total Credit Amount: {{ total_credit_amount }}</th>
+                    <th>Total Debit Amount: {{ total_debit_amount }}</th>
+                    <th>Total Balance Amount: {{ total_remaining_balance }}</th>
+                </tr>
+            </thead>
         </table>
     </div>
 </body>
