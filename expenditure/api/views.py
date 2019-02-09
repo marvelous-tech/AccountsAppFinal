@@ -429,12 +429,12 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
 
         expend_obj_ref_or_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date=today),
+            Q(expend_date=datetime.date.today()),
             Q(is_for_refund=True) | Q(is_for_return=True)
             )
 
         credit_obj = self.get_credit_funds().filter(
-            Q(fund_added=today)
+            Q(fund_added=datetime.date.today())
             )
         all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
         all_credit_amounts = [obj.amount for obj in credit_obj]
@@ -449,7 +449,7 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
     def get_today_total_expend_amount(self):
         expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date=today),
+            Q(expend_date=datetime.date.today()),
             Q(is_for_refund=False),
             Q(is_for_return=False)
             )
