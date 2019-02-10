@@ -244,7 +244,7 @@ class CreditLoanRecieveRecordRetrieveAPIView(CreditFundRetrieveAPIView):
 
 class CreditFundHistory(generics.ListAPIView):
     serializer_class = serializers.CreditFundHistoryModelSerializer
-    permission_classes = [permissions.OnlyBaseUser, ]
+    permission_classes = [permissions.BaseUserOrSubUser, ]
     filter_backends = (filters.OrderingFilter, filters.SearchFilter)
     search_fields = (
         'action_by__username',

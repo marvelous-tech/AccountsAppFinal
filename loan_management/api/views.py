@@ -65,7 +65,7 @@ class LoanCreditListAPIView(generics.ListAPIView):
 
 
 class LoanExpenditureListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [main_permissions.FundIsNotLocked, main_permissions.BaseUserOrSubUser]
+    permission_classes = [main_permissions.FundIsNotLocked, main_permissions.BaseUserOrSubUser, main_permissions.SubUserCanAdd]
     serializer_class = loan_serializers.ExpenditureForLoanSerializer
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = ExpenditureRecordFilter
@@ -161,7 +161,7 @@ class LoanCreditUpdateAPIView(generics.RetrieveUpdateAPIView):
 
 
 class LoanExpenditureUpdateAPIView(generics.RetrieveUpdateAPIView):
-    permission_classes = [main_permissions.FundIsNotLocked, main_permissions.BaseUserOrSubUser]
+    permission_classes = [main_permissions.FundIsNotLocked, main_permissions.OnlyBaseUser]
     serializer_class = loan_serializers.ExpenditureForLoanSerializer
     lookup_field = "uuid"
 

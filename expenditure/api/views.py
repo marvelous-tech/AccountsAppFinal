@@ -69,7 +69,7 @@ class ExpenditureHeadingHistory(generics.ListAPIView):
 
 class ExpenditureRecordHistory(generics.ListAPIView):
     serializer_class = ExpenditureRecordHistoryModelSerializer
-    permission_classes = [permissions.OnlyBaseUser, ]
+    permission_classes = [permissions.BaseUserOrSubUser, ]
     filter_backends = (filters.OrderingFilter, filters.SearchFilter)
     search_fields = (
         'action_by__username',
