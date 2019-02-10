@@ -9,33 +9,29 @@
     <style>
         @page {
             size: a4 portrait;
+            margin: 1cm;
 
-            @frame header_frame {
-                /* Static Frame */
-                -pdf-frame-content: header_content;
-                left: 40pt;
-                width: 512pt;
-                top: 25pt;
-                height: 105pt;
+            @frame header_frame {          
+                 /* Static Frame */
+                pdf-frame-content: header_content;
+                width: 525pt; top: 10pt; height: 100pt;
+                /*-pdf-frame-border: 1;*/
             }
 
-            @frame content_frame {
+            @frame content_frame {          
                 /* Content Frame */
-                left: 40pt;
-                width: 512pt;
-                top: 90pt;
-                height: 632pt;
+                left: 35pt; width: 525pt; top: 92pt; height: 684pt;
+                /*-pdf-frame-border: 1;*/
             }
 
-            @frame footer_frame {
+            @frame footer_frame {           
                 /* Another static Frame */
                 -pdf-frame-content: footer_content;
-                left: 40pt;
-                width: 512pt;
-                top: 750pt;
-                height: 90pt;
+                width: 525pt; bottom: 8pt; height: 53pt;
+                /*-pdf-frame-border: 1;*/
             }
         }
+        p { margin: 0; -pdf-keep-with-next: true; }
 
         .sign {
             width: 100%;
@@ -91,34 +87,44 @@
         .good {
             color: #333;
         }
+
+        img {
+            margin: 0;
+            padding: 0;
+            line-height: 24pt;
+        }
     </style>
 </head>
 
 <body>
     <!-- Content for Static Frame 'header_frame' -->
     <div id="header_content">
-        <h1 style="text-align: center; font-size: 20pt; margin-bottom: 1pt;">
-            {{ company.name }}
-        </h1>
-        <p style="text-align: center">{{ company.address }}</p>
+        <p style="text-align: center; font-size: 24pt; margin: 0;">
+            <img src="http://localhost:8000{{ company.getLogoURL }}" width="50pt"> 
+            <i>{{ company.name }}</i>
+        </p>
+        <i style="text-align: center; font-size: 9pt; margin: 0;">{{ company.title }}</i>
+        <p 
+        style="text-align: center; font-size: 8pt; margin: 0; text-decoration:underline; color: #133a7a;"
+        >{{ company.address }}</p>
         <hr>
     </div>
 
     <!-- Content for Static Frame 'footer_frame' -->
     <div id="footer_content" style="text-align: center; color: #444">
-        <hr>
-        All signatures of the authority must include!
+    <hr>
+        Becasue of an electornic report signatures are not mandetory
         (c) - page <pdf:pagenumber> of <pdf:pagecount>
 
-                <p>Generated at {{ date }}</p>
-                <p>Page ID: <b>{{ page_unique_id }}</b></p>
+                <p style="margin: 0">Generated at {{ date }}</p>
+                <p style="margin: 0">Report ID: <b>{{ page_unique_id }}</b></p>
     </div>
 
     <div>
-        <h5>Accounts Report in {{ date | date }}</h5>
-        <h5>Last day Credit was:  {{ last_credit_amount }} TAKA</h5>
-        <h5>Last day Debit was:  {{ last_debit_amount }} TAKA</h5>
-        <h5>Last day Balance was:  {{ last_balance_amount }} TAKA</h5>
+        <p>Accounts Report in {{ date | date }}</p>
+        <p>Last day Credit was:  {{ last_credit_amount }} TAKA</p>
+        <p>Last day Debit was:  {{ last_debit_amount }} TAKA</p>
+        <p>Last day Balance was:  {{ last_balance_amount }} TAKA</p>
         <h2 class="lead">Credit Records</h2>
         <table>
             <thead>

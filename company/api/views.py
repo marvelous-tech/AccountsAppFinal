@@ -1,6 +1,6 @@
 from rest_framework import generics
 from company.api.serializers import CompanyInfoModelSerializer
-from project.permissions import OnlyBaseUser, BaseUserOrSubUser
+from project.permissions import OnlyBaseUser, BaseUserOrSubUser, SuperUserOrStuffOnly
 from base_user.models import BaseUserModel
 from sub_user.models import SubUserModel
 from company.api.permissions import MustHaveACompany
@@ -8,7 +8,7 @@ from company.api.permissions import MustHaveACompany
 
 class CompanyInfoCreateAPIView(generics.CreateAPIView):
     serializer_class = CompanyInfoModelSerializer
-    permission_classes = [OnlyBaseUser, MustHaveACompany]
+    permission_classes = [SuperUserOrStuffOnly, ]
 
     def get_queryset(self):
         return self.request.user.base_user.company_user
