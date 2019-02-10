@@ -8,14 +8,14 @@ from base_user.models import BaseUserModel
 from sub_user.models import SubUserModel
 from base_user.api.serializers import BaseUserSerializer
 from sub_user.api.serializers import SubUserModelSerializers
-from project.permissions import BaseUserOrSubUser, OnlyBaseUser
+from project.permissions import BaseUserOrSubUser, OnlyBaseUser, BaseUserOrSubUserInfoPermission
 from utils import utils
 import os
 import datetime
 
 
 class GetUserData(generics.RetrieveAPIView):
-    permission_classes = [BaseUserOrSubUser, ]
+    permission_classes = [BaseUserOrSubUserInfoPermission, ]
 
     def get_object(self):
         queryset = None
@@ -33,7 +33,7 @@ class GetUserData(generics.RetrieveAPIView):
 
 
 class GetTotalFundAmount(generics.GenericAPIView):
-    permission_classes = [BaseUserOrSubUser, ]
+    permission_classes = [BaseUserOrSubUserInfoPermission, ]
 
     def get_queryset(self):
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
@@ -114,7 +114,7 @@ class MailOnNonBaseUser(generics.GenericAPIView):
 
 
 class GrabWhatYouWantedAPIView(generics.GenericAPIView):
-    permission_classes = [BaseUserOrSubUser, ]
+    permission_classes = [BaseUserOrSubUserInfoPermission, ]
 
     def get_base_user(self):
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
@@ -162,7 +162,7 @@ class GrabWhatYouWantedAPIView(generics.GenericAPIView):
         info = self.request.user.user_extra_info
         return {
             'is_approved': info.is_approved,
-            'is_locked': info.is_not_locked,
+            'is_locked': info.is_not_locked is False,
             'is_active': info.is_active
         }
     # %Y-%m-%d

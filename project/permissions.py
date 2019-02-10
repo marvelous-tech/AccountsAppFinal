@@ -72,6 +72,24 @@ class BaseUserOrSubUser(BasePermission):
         return False
 
 
+class BaseUserOrSubUserInfoPermission(BasePermission):
+    
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            if UserExtraInfoModel.objects.filter(user=request.user).exists() is False:
+                return False
+            user_info = request.user.user_extra_info
+            if BaseUserModel.objects.filter(base_user=request.user).exists():
+                return user_info.is_not_locked
+            if SubUserModel.objects.filter(root_user=request.user).exists():
+                sub_user = SubUserModel.objects.get(root_user=request.user)
+                base_user_extra_info = sub_user.base_user.base_user.user_extra_info
+                return sub_user.is_active and user_info.is_not_locked \
+                    and sub_user.is_active and base_user_extra_info.is_not_locked
+            return False
+        return False
+
+
 class SubUserCanList(BasePermission):
     attrs = ['canList']
 
