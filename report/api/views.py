@@ -1,10 +1,17 @@
 from rest_framework import generics
 from base_user.models import BaseUserModel
 from sub_user.models import SubUserModel
+from company.models import CompanyInfoModel
 import datetime
+from django.db.models import Q
+from utils import utils
+import uuid
+today = datetime.datetime.today().strftime('%Y-%m-%d')
 
 
 class DownloadReportPDF(generics.ListAPIView):
+
+    permission_classes = []
 
     def get_base_user(self):
         if BaseUserModel.objects.filter(base_user=self.request.user).exists():
@@ -100,15 +107,17 @@ class DownloadReportPDF(generics.ListAPIView):
 
         return todays_open_debit_amount
     
-    def get_today_credit_fund(self):
+    def get_credit_fund(self, date_from, date_to):
         expend_obj_ref_or_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date=datetime.date.today()),
+            Q(added__date__lte=date_to),
+            Q(added__date__gte=date_from),
             Q(is_for_refund=True) | Q(is_for_return=True)
             )
 
         credit_obj = self.get_credit_funds().filter(
-            Q(fund_added=datetime.date.today())
+            Q(added__date__lte=date_to),
+            Q(added__date__gte=date_from),
             )
 
         all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
@@ -121,10 +130,11 @@ class DownloadReportPDF(generics.ListAPIView):
 
         return todays_open_credit_fund
     
-    def get_today_debit_amount(self):
+    def get_debit_amount(self, date_from, date_to):
         expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date=datetime.date.today()),
+            Q(added__date__lte=date_to),
+            Q(added__date__gte=date_from),
             Q(is_for_refund=False),
             Q(is_for_return=False)
             )
@@ -133,3 +143,34 @@ class DownloadReportPDF(generics.ListAPIView):
         todays_open_debit_amount = utils.sum_int_of_array(all_expend_amounts)
 
         return todays_open_debit_amount
+    
+    def get(self, request, *args, **kwargs):
+        date_from = self.request.query_params.get('date_from', datetime.date.today())
+        date_to = self.request.query_params.get('date_to', datetime.date.today())
+
+        company = CompanyInfoModel.objects.get(base_user=self.get_base_user())
+
+        context = {
+            'company': company,
+            'pdf_name': f'Expenditure {today}',
+            'date': datetime.datetime.now(),
+            'page_unique_id': uuid.uuid4(),
+            'credit_items': self.get_credit_funds().filter(
+                Q(added__date__lte=date_to),
+                Q(added__date__gte=date_from)
+                ),
+            'debit_items': self.get_expend_records().filter(
+                Q(added__date__lte=date_to),
+                Q(added__date__gte=date_from),
+                is_verified=True
+                ),
+            'total_credit_amount': self.get_total_credit_amount(),
+            'total_debit_amount': self.get_total_expend_amount(),
+            'total_remaining_balance': self.get_remaining_credit_fund_amount(),
+            'last_credit_amount': self.get_todays_open_credit_fund(),
+            'last_debit_amount': self.get_todays_open_debit_amount()
+        }
+
+        pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)
+        return pdf
+

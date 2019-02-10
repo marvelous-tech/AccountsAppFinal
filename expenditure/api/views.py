@@ -471,25 +471,14 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
         return todays_open_debit_amount
 
     def get(self, request, *args, **kwargs):
-        items = self.filter_queryset(queryset=self.get_queryset().filter(added__date=today))
-        file_name = f'expenditure_records_of_{today}.csv'
-        response = utils.django_download_generated_csv_from_model_object(file_name, items, self.headings, self.attributes)
+        file_name = f'expenditure_records_of_{today}.pdf'
         subject = f'Accounts Application: Today - {today} - Checkout'
         body = f'''
         This is an automated e-mail from your application.
         Your daily expenditure records in {datetime.datetime.today().strftime("%d %B, %Y")}
         '''
         base_user = self.get_base_user()
-
-        emails = base_user.all_emails.filter(is_active=True)
-        to = [base_user.base_user.email, ]
-
-        for email in emails:
-            to.append(email.email_address)
-
-        content = response.getvalue()
-        utils.django_send_email_with_attachments(subject, body, self.from_email, to, file_name, content, self.mimetype)
-        # Generate PDF
+        
         company = CompanyInfoModel.objects.get(base_user=base_user)
 
         context = {
@@ -510,6 +499,16 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
         }
 
         pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)
+
+        emails = base_user.all_emails.filter(is_active=True)
+        to = [base_user.base_user.email, ]
+
+        for email in emails:
+            to.append(email.email_address)
+
+        content = pdf.getvalue()
+        utils.django_send_email_with_attachments(subject, body, self.from_email, to, file_name, content, 'text/pdf')
+
         return pdf
 
     def post(self, request, *args, **kwargs):
