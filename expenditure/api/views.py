@@ -405,12 +405,12 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
     def get_todays_open_credit_fund(self):
         expend_obj_ref_or_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date__lt=datetime.date.today()),
+            Q(added__date__lt=datetime.date.today()),
             Q(is_for_refund=True) | Q(is_for_return=True)
             )
 
         credit_obj = self.get_credit_funds().filter(
-            Q(fund_added__lt=datetime.date.today())
+            Q(added__date__lt=datetime.date.today())
             )
 
         all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
@@ -426,7 +426,7 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
     def get_todays_open_debit_amount(self):
         expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date__lt=datetime.date.today()),
+            Q(added__date__lt=datetime.date.today()),
             Q(is_for_refund=False),
             Q(is_for_return=False)
             )
@@ -439,12 +439,12 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
     def get_today_credit_fund(self):
         expend_obj_ref_or_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date=datetime.date.today()),
+            Q(added__date=datetime.date.today()),
             Q(is_for_refund=True) | Q(is_for_return=True)
             )
 
         credit_obj = self.get_credit_funds().filter(
-            Q(fund_added=datetime.date.today())
+            Q(added__date=datetime.date.today())
             )
 
         all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
@@ -460,7 +460,7 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
     def get_today_debit_amount(self):
         expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(expend_date=datetime.date.today()),
+            Q(added__date=datetime.date.today()),
             Q(is_for_refund=False),
             Q(is_for_return=False)
             )
@@ -497,9 +497,9 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
             'pdf_name': f'Expenditure {today}',
             'date': datetime.datetime.now(),
             'page_unique_id': uuid.uuid4(),
-            'credit_items': self.get_credit_funds().filter(Q(fund_added=datetime.date.today())),
+            'credit_items': self.get_credit_funds().filter(Q(added__date=datetime.date.today())),
             'debit_items': self.get_expend_records().filter(
-                Q(expend_date=datetime.date.today()),
+                Q(added__date=datetime.date.today()),
                 is_verified=True
                 ),
             'total_credit_amount': self.get_total_credit_amount(),
@@ -553,9 +553,9 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
             'pdf_name': f'Expenditure {today}',
             'date': datetime.datetime.now(),
             'page_unique_id': uuid.uuid4(),
-            'credit_items': self.get_credit_funds().filter(Q(fund_added=datetime.date.today())),
+            'credit_items': self.get_credit_funds().filter(Q(added__date=datetime.date.today())),
             'debit_items': self.get_expend_records().filter(
-                Q(expend_date=datetime.date.today()),
+                Q(added__date=datetime.date.today()),
                 is_verified=True
                 ),
             'total_credit_amount': self.get_total_credit_amount(),
