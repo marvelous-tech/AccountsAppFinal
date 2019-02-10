@@ -31,15 +31,5 @@ services:
     expose:
       - "8000"
 
-  nginx:
-    container_name: django_nginx
-    image: nginx:latest
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
-    depends_on:
-      - app
-
 volumes:
   pgdata:
