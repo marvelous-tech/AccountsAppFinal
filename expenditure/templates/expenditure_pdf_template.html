@@ -116,8 +116,9 @@
 
     <div>
         <h5>Accounts Report in {{ date | date }}</h5>
-        <h5>Before today total Credit:  {{ last_credit_amount }} TAKA</h5>
-        <h5>Before today total Debit:  {{ last_debit_amount }} TAKA</h5>
+        <h5>Last day credit was:  {{ last_credit_amount }} TAKA</h5>
+        <h5>Last day debit was:  {{ last_debit_amount }} TAKA</h5>
+        <h5>Last day debit was:  {{ last_balance_amount }} TAKA</h5>
         <h2 class="lead">Credit Records</h2>
         <table>
             <thead>

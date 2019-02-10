@@ -439,12 +439,12 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
     def get_today_credit_fund(self):
         expend_obj_ref_or_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(added__date__exact=datetime.date.today()),
+            Q(added__date=datetime.date.today()),
             Q(is_for_refund=True) | Q(is_for_return=True)
             )
 
         credit_obj = self.get_credit_funds().filter(
-            Q(added__date__exact=datetime.date.today())
+            Q(added__date=datetime.date.today())
             )
 
         all_expend_amounts = [obj.amount for obj in expend_obj_ref_or_ret]
@@ -453,14 +453,14 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
         total_expend_amount = utils.sum_int_of_array(all_expend_amounts)
         total_credit_amount = utils.sum_int_of_array(all_credit_amounts)
 
-        todays_open_credit_fund = total_credit_amount - total_expend_amount
+        today_credit_fund = total_credit_amount - total_expend_amount
 
-        return todays_open_credit_fund
+        return today_credit_fund
     
     def get_today_debit_amount(self):
         expend_obj_non_ref_and_non_ret = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(added__date__exact=datetime.date.today()),
+            Q(added__date=datetime.date.today()),
             Q(is_for_refund=False),
             Q(is_for_return=False)
             )
@@ -495,7 +495,10 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
             'total_debit_amount': self.get_total_expend_amount(),
             'total_remaining_balance': self.get_remaining_credit_fund_amount(),
             'last_credit_amount': self.get_todays_open_credit_fund(),
-            'last_debit_amount': self.get_todays_open_debit_amount()
+            'last_debit_amount': self.get_todays_open_debit_amount(),
+            'today_credit_amount': self.get_today_credit_fund(),
+            'today_debit_amount': self.get_today_debit_amount(),
+            'last_balance_amount': self.get_todays_open_credit_fund() - self.get_todays_open_debit_amount()
         }
 
         pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)
@@ -563,7 +566,8 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
             'last_credit_amount': self.get_todays_open_credit_fund(),
             'last_debit_amount': self.get_todays_open_debit_amount(),
             'today_credit_amount': self.get_today_credit_fund(),
-            'today_debit_amount': self.get_today_debit_amount()
+            'today_debit_amount': self.get_today_debit_amount(),
+            'last_balance_amount': self.get_todays_open_credit_fund() - self.get_todays_open_debit_amount()
         }
 
         pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)
