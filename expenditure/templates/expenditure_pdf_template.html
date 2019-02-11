@@ -80,8 +80,8 @@
         }
 
         .error {
-            background-color: #ffa4a2;
-            color: #444;
+            background-color: #ffc4c4;
+            color: #d10c0c;
         }
 
         .good {
@@ -140,12 +140,12 @@
             </thead>
             <tbody>
                 {% for data in credit_items %}
-                <tr>
-                    <td>{{ data.source.source_name | title }}</td>
-                    <td>{{ data.amount }}</td>
-                    <td colspan="2">{{ data.description }}</td>
-                    <td>{{ data.fund_added }}</td>
-                </tr>
+                    <tr>
+                        <td>{{ data.source.source_name | title }}</td>
+                        <td>{{ data.amount }}</td>
+                        <td colspan="2">{{ data.description }}</td>
+                        <td>{{ data.fund_added }}</td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -166,14 +166,25 @@
             </thead>
             <tbody>
                 {% for data in debit_items %}
-                <tr>
-                    <td>{{ data.expend_heading }}</td>
-                    <td>{{ data.amount }}</td>
-                    <td colspan="2">{{ data.description }}</td>
-                    <td>{{ data.expend_by | title }}</td>
-                    <td>{{ data.added_by | title }}</td>
-                    <td>{{ data.expend_date }}</td>
-                </tr>
+                    {% if data.is_verified is True %}
+                        <tr>
+                            <td>{{ data.expend_heading }}</td>
+                            <td>{{ data.amount }}</td>
+                            <td colspan="2">{{ data.description }}</td>
+                            <td>{{ data.expend_by | title }}</td>
+                            <td>{{ data.added_by | title }}</td>
+                            <td>{{ data.expend_date }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="error">{{ data.expend_heading }}</td>
+                            <td class="error">{{ data.amount }}</td>
+                            <td class="error" colspan="2">{{ data.description }}</td>
+                            <td class="error">{{ data.expend_by | title }} <b style="margin-left: 3pt">Unauthorized</b></td>
+                            <td class="error">{{ data.added_by | title }}</td>
+                            <td class="error">{{ data.expend_date }}</td>
+                        </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>

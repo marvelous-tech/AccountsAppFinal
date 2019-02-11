@@ -508,8 +508,7 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
             'page_unique_id': uuid.uuid4(),
             'credit_items': self.get_credit_funds().filter(Q(added__date=datetime.date.today())),
             'debit_items': self.get_expend_records().filter(
-                Q(added__date=datetime.date.today()),
-                is_verified=True
+                Q(added__date=datetime.date.today())
                 ),
             'total_credit_amount': self.get_total_credit_amount(),
             'total_debit_amount': self.get_total_expend_amount(),
@@ -577,8 +576,7 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
             'page_unique_id': uuid.uuid4(),
             'credit_items': self.get_credit_funds().filter(Q(added__date=datetime.date.today())),
             'debit_items': self.get_expend_records().filter(
-                Q(added__date=datetime.date.today()),
-                is_verified=True
+                Q(added__date=datetime.date.today())
                 ),
             'total_credit_amount': self.get_total_credit_amount(),
             'total_debit_amount': self.get_total_expend_amount(),
