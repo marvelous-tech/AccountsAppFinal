@@ -36,5 +36,5 @@ class CompanyInfoModel(models.Model):
     
     def getLogoURL(self):
         if not self.logo:
-            return '/blob/defaults/company_logo/logo.png'
+            return 'defaults/company_logo/logo.png'
         return self.logo.url
