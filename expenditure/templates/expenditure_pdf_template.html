@@ -121,7 +121,7 @@
     </div>
 
     <div>
-        <p>Accounts Report in {{ date | date }}</p>
+        <p>Accounts Daily Report in {{ date | date }}</p>
         <p>Last day Credit was:  {{ last_credit_amount }} TAKA</p>
         <p>Last day Debit was:  {{ last_debit_amount }} TAKA</p>
         <p>Last day Balance was:  {{ last_balance_amount }} TAKA</p>
@@ -129,12 +129,12 @@
         <table>
             <thead>
                 <tr>
-                    <th colspan="4" class="info">Today's Total Credit Amount: {{ today_credit_amount }} TAKA</th>
+                    <th colspan="5" class="info">Today's Total Credit Amount: {{ today_credit_amount }} TAKA</th>
                 </tr>
                 <tr class="heads">
                     <th>Credit Head</th>
                     <th>Credit Amount (In Taka)</th>
-                    <th>Credit Description</th>
+                    <th colspan="2">Credit Description</th>
                     <th>Added Date</th>
                 </tr>
             </thead>
@@ -143,7 +143,7 @@
                 <tr>
                     <td>{{ data.source.source_name | title }}</td>
                     <td>{{ data.amount }}</td>
-                    <td>{{ data.description }}</td>
+                    <td colspan="2">{{ data.description }}</td>
                     <td>{{ data.fund_added }}</td>
                 </tr>
                 {% endfor %}
@@ -153,12 +153,12 @@
         <table>
             <thead>
                 <tr>
-                    <th colspan="6" class="info">Today's Total Debit Amount: {{ today_debit_amount }} TAKA</th>
+                    <th colspan="7" class="info">Today's Total Debit Amount: {{ today_debit_amount }} TAKA</th>
                 </tr>
                 <tr class="heads">
                     <th>Debit Head</th>
                     <th>Debit Amount (In Tk)</th>
-                    <th>Debit Description</th>
+                    <th colspan="2">Debit Description</th>
                     <th>Expended By</th>
                     <th>Added By</th>
                     <th>Expend Date</th>
@@ -169,7 +169,7 @@
                 <tr>
                     <td>{{ data.expend_heading }}</td>
                     <td>{{ data.amount }}</td>
-                    <td>{{ data.description }}</td>
+                    <td colspan="2">{{ data.description }}</td>
                     <td>{{ data.expend_by | title }}</td>
                     <td>{{ data.added_by | title }}</td>
                     <td>{{ data.expend_date }}</td>
