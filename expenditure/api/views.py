@@ -587,7 +587,8 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
             'last_debit_amount': self.get_todays_open_debit_amount(),
             'today_credit_amount': self.get_today_credit_fund(),
             'today_debit_amount': self.get_today_debit_amount(),
-            'last_balance_amount': self.get_todays_open_credit_fund() - self.get_todays_open_debit_amount()
+            'last_balance_amount': self.get_todays_open_credit_fund() - self.get_todays_open_debit_amount(),
+            'host': request.get_host()
         }
 
         pdf = utils.django_render_to_pdf('expenditure_pdf_template.html', context)

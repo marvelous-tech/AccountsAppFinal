@@ -49,5 +49,5 @@ urlpatterns += [
     re_path(r'^rest-auth/', include('rest_auth.urls')),
     re_path(r'^api-token-verify/', verify_jwt_token),
     re_path(r'^api-token-refresh/', refresh_jwt_token),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # END HERE
