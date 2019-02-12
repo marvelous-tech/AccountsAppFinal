@@ -61,6 +61,7 @@ class ExpenditureRecordModel(models.Model):
 
     amount = models.PositiveIntegerField()
     is_verified = models.BooleanField(default=False)
+    is_verified_once = models.BooleanField(default=False)
     expend_date = models.DateField()
 
     uuid = models.UUIDField(unique=True)

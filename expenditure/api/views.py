@@ -243,6 +243,15 @@ class ExpenditureRecordRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         return queryset
 
 
+class ExpenditureRecordVerifyAPIView(generics.UpdateAPIView):
+    permission_classes = [permissions.OnlyBaseUser, ]
+    serializer_class = ExpenditureRecordModelSerializer
+    lookup_field = 'uuid'
+
+    def get_queryset(self):
+        return self.request.user.base_user.all_expenditure_records.filter(is_verified=False, is_verified_once=False)
+
+
 # Loan Giving
 
 

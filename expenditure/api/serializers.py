@@ -318,6 +318,24 @@ class ExpenditureRecordModelSerializer(ExpenditureRecordModelSafeSerializer):
         read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return')
 
 
+class ExpenditureRecordVerifyModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ExpenditureRecordModel
+        fields = ('is_verified', )
+        read_only_fields = ('is_verified', )
+
+    def create(self, validated_data):
+        return None
+
+    def update(self, instance, validated_data):
+        instance.is_verified = True
+        instance.is_verified_once = True
+        instance.save()
+
+        return instance
+
+
 class ExpenditureRecordForGivinLoanModelSafeSerializer(ExpenditureRecordModelSerializer):
         edit_url = serializers.HyperlinkedIdentityField(
             view_name='expenditure_app:loan_giving_view_update_delete',

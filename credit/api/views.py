@@ -182,10 +182,10 @@ class CreditFundSettingsEditView(generics.RetrieveUpdateAPIView):
         return self.request.user.base_user.fund_settings
 
 
-# For Loan Recieve Start
+# For Loan Receive Start
 
 
-class CreditLoanRecieveRecordListAPIView(CreditFundListAPIView):
+class CreditLoanReceiveRecordListAPIView(CreditFundListAPIView):
 
     serializer_class = serializers.CreditFundForLoanRecieveModelSerializer
 
@@ -202,7 +202,7 @@ class CreditLoanRecieveRecordListAPIView(CreditFundListAPIView):
                 )
 
 
-class CreditLoanRecieveRecordListCreateAPIView(CreditFundListCreateAPIView):
+class CreditLoanReceiveRecordListCreateAPIView(CreditFundListCreateAPIView):
 
     serializer_class = serializers.CreditFundForLoanRecieveModelSerializer
 
@@ -215,7 +215,7 @@ class CreditLoanRecieveRecordListCreateAPIView(CreditFundListCreateAPIView):
         )
 
 
-class CreditLoanRecieveRecordRetrieveUpdateAPIView(CreditFundRetrieveUpdateAPIView):
+class CreditLoanReceiveRecordRetrieveUpdateAPIView(CreditFundRetrieveUpdateAPIView):
 
     serializer_class = serializers.CreditFundForLoanRecieveModelSerializer
 
@@ -227,7 +227,7 @@ class CreditLoanRecieveRecordRetrieveUpdateAPIView(CreditFundRetrieveUpdateAPIVi
             )
 
 
-class CreditLoanRecieveRecordRetrieveAPIView(CreditFundRetrieveAPIView):
+class CreditLoanReceiveRecordRetrieveAPIView(CreditFundRetrieveAPIView):
 
     serializer_class = serializers.CreditFundForLoanRecieveModelSerializer
 
@@ -239,7 +239,7 @@ class CreditLoanRecieveRecordRetrieveAPIView(CreditFundRetrieveAPIView):
             )
 
 
-# For Loan Recieve End
+# For Loan Receive End
 
 
 class CreditFundHistory(generics.ListAPIView):
