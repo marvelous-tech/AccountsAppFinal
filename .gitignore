@@ -8,7 +8,7 @@ pgdata/
 *entrypoint*
 mydatabase
 pgdatabase/
-
+blob/
 # C extensions 
 *.so  
 
