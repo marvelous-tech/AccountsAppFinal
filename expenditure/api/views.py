@@ -85,7 +85,7 @@ class ExpenditureRecordHistory(generics.ListAPIView):
     ordering = ('-id',)
 
     def get_queryset(self):
-        return self.request.user.base_user.all_expenditure_records_history.all()
+        return utils.get_base_user(self.request).all_expenditure_records_history.all()
 
 
 class ExpenditureRecordCreateAPIView(generics.CreateAPIView):
