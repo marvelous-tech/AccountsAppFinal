@@ -4,6 +4,15 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
+from base_user.models import BaseUserModel
+from sub_user.models import SubUserModel
+
+
+def get_base_user(request):
+    if BaseUserModel.objects.filter(base_user=request.user).exists():
+        return request.user.base_user
+    elif SubUserModel.objects.filter(root_user=request.user).exists():
+        return request.user.root_sub_user.base_user
 
 
 def sum_int_of_array(array):
