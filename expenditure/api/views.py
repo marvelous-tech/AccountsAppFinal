@@ -415,10 +415,10 @@ class ExpenditureCheckoutToday(ExpenditureRecordCreateAPIView):
 
         expend_obj = self.get_expend_records().filter(
             Q(is_verified=True),
-            Q(added__date=datetime.date.today())
+            Q(added__date__lt=datetime.date.today())
             )
         credit_obj = self.get_credit_funds().filter(
-            Q(added__date=datetime.date.today())
+            Q(added__date__lt=datetime.date.today())
         )
 
         all_expend_obj_amounts = [obj.amount for obj in expend_obj]
@@ -594,7 +594,7 @@ class ExpenditureRenderPDF(ExpenditureCheckoutToday):
             'last_debit_amount': self.get_todays_open_debit_amount(),
             'today_credit_amount': self.get_today_credit_fund(),
             'today_debit_amount': self.get_today_debit_amount(),
-            'last_balance_amount': self.get_todays_open_credit_fund() - self.get_todays_open_debit_amount(),
+            'last_balance_amount': self.get_last_remaining_credit_fund_amount(),
             'host': request.get_host()
         }
 
