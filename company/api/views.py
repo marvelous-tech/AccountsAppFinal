@@ -4,6 +4,7 @@ from project.permissions import OnlyBaseUser, BaseUserOrSubUser, SuperUserOrStuf
 from base_user.models import BaseUserModel
 from sub_user.models import SubUserModel
 from company.api.permissions import MustHaveACompany
+from company.models import CompanyInfoModel
 
 
 class CompanyInfoCreateAPIView(generics.CreateAPIView):
@@ -11,7 +12,7 @@ class CompanyInfoCreateAPIView(generics.CreateAPIView):
     permission_classes = [SuperUserOrStuffOnly, ]
 
     def get_queryset(self):
-        return self.request.user.base_user.company_user
+        return CompanyInfoModel.objects.all()
 
 
 class CompanyInfoAPIView(generics.RetrieveAPIView):

@@ -10,7 +10,7 @@ from expenditure.api.filters import ExpenditureRecordFilter
 
 class LoanCreditListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [main_permissions.FundIsNotLocked, main_permissions.OnlyBaseUser]
-    serializer_class = loan_serializers.CreditForLoanSerializer
+    serializer_class = loan_serializers.CreditForLoanForCreateSerializer
     filter_backends = (filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('description', 'uuid')
     ordering_fields = ('added', 'source__source_name', 'amount')

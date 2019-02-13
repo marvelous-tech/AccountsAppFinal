@@ -48,8 +48,6 @@ class CreditForLoanSerializer(credit_serializers.CreditFundModelSerializer):
         read_only_fields = ('uuid', 'added', 'updated', 'source_name', 'is_refundable', 'loan')
 
     def create(self, validated_data):
-        validated_data.pop("extra_description")
-        validated_data.pop("is_deleted")
         obj = credit_models.CreditFundModel.objects.create(
             base_user=self.base_user_model(),
             uuid=uuid.uuid4(),
@@ -495,3 +493,24 @@ class ExpenditureForLoanForCreateSerializer(ExpenditureForLoanSerializer):
         model = expend_models.ExpenditureRecordModel
         exclude = ('base_user', )
         read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'loan')
+
+
+class CreditForLoanForCreateSerializer(CreditForLoanSerializer):
+
+    class Meta:
+        model = credit_models.CreditFundModel
+        fields = (
+            'source',
+            'source_name',
+            'url',
+            'description',
+            'added',
+            'updated',
+            'amount',
+            'fund_added',
+            'uuid',
+            'loan',
+            'is_refundable'
+        )
+        read_only_fields = ('uuid', 'added', 'updated', 'source_name', 'is_refundable', 'loan')
+

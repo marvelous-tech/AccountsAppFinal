@@ -8,23 +8,17 @@ class CompanyInfoModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyInfoModel
         fields = (
+            'base_user',
             'name',
             'title',
             'address',
             'company_type',
             'created'
             )
-    
-    def request_data(self):
-        return self.context['request']
-    
-    def logged_in_user(self):
-        return self.request_data().user
 
     def create(self, validated_data):
         obj = CompanyInfoModel.objects.create(
             **validated_data,
-            base_user=self.logged_in_user().base_user,
             uuid=uuid.uuid4(),
             is_approved=False
             )

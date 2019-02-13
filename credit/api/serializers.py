@@ -61,8 +61,6 @@ class CreditFundModelSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        validated_data.pop("extra_description")
-        validated_data.pop("is_deleted")
         obj = CreditFundModel.objects.create(
             base_user=self.base_user_model(),
             uuid=uuid.uuid4(),
@@ -188,6 +186,26 @@ class CreditFundModelSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_source_name(obj):
         return obj.__str__()
+
+
+class CreditFundModelForCreateSerializer(CreditFundModelSerializer):
+
+    class Meta:
+        model = CreditFundModel
+        fields = (
+            'source',
+            'source_name',
+            'url',
+            'description',
+            'added',
+            'updated',
+            'amount',
+            'fund_added',
+            'uuid',
+            'is_refundable',
+            'is_returnable'
+        )
+        read_only_fields = ('uuid', 'added', 'updated', 'source_name', 'is_refundable', 'is_returnable')
 
 
 # Sorry for that

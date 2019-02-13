@@ -57,7 +57,7 @@ class CreditFundSourceRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
 
 
 class CreditFundListCreateAPIView(generics.ListCreateAPIView):
-    serializer_class = serializers.CreditFundModelSerializer
+    serializer_class = serializers.CreditFundModelForCreateSerializer
     permission_classes = [permissions.OnlyBaseUser, ]
     filter_backends = (filters.OrderingFilter, filters.SearchFilter, DjangoFilterBackend)
     search_fields = ('description', 'uuid')
