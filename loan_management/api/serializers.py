@@ -234,7 +234,6 @@ class ExpenditureForLoanSerializer(expend_serializers.ExpenditureRecordModelSafe
         read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'loan')
 
     def create(self, validated_data):
-        validated_data.pop('extra_description')
         new_value = validated_data.get('amount')
 
         # General Operation
@@ -489,5 +488,10 @@ class ExpenditureForLoanSerializer(expend_serializers.ExpenditureRecordModelSafe
         raise serializers.ValidationError(detail='Credit Fund will be exceede! So you cannot add any more records. After authority add more Credit Fund in Database you can entry more records.')
 
 
-
-
+class ExpenditureForLoanForCreateSerializer(ExpenditureForLoanSerializer):
+    extra_description = None
+    
+    class Meta:
+        model = expend_models.ExpenditureRecordModel
+        exclude = ('base_user', )
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'loan')

@@ -66,7 +66,7 @@ class LoanCreditListAPIView(generics.ListAPIView):
 
 class LoanExpenditureListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [main_permissions.FundIsNotLocked, main_permissions.BaseUserOrSubUser, main_permissions.SubUserCanAdd]
-    serializer_class = loan_serializers.ExpenditureForLoanSerializer
+    serializer_class = loan_serializers.ExpenditureForLoanForCreateSerializer
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = ExpenditureRecordFilter
     search_fields = (

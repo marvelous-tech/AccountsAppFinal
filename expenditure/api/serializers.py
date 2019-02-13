@@ -153,7 +153,6 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
             return self.logged_in_user().root_sub_user.base_user
 
     def create(self, validated_data):
-        validated_data.pop('extra_description')
         new_value = validated_data.get('amount')
 
         expend_obj = self.base_user_model().all_expenditure_records.all().filter(is_deleted=False)
@@ -318,6 +317,15 @@ class ExpenditureRecordModelSerializer(ExpenditureRecordModelSafeSerializer):
         read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return')
 
 
+class ExpenditureRecordModelForCreateSerializer(ExpenditureRecordModelSafeSerializer):
+    extra_description = None
+
+    class Meta:
+        model = ExpenditureRecordModel
+        exclude = ('base_user', )
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return')
+
+
 class ExpenditureRecordVerifyModelSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -348,7 +356,6 @@ class ExpenditureRecordForGivinLoanModelSafeSerializer(ExpenditureRecordModelSer
         )
 
         def create(self, validated_data):
-            validated_data.pop('extra_description')
             new_value = validated_data.get('amount')
 
             # General Operation
@@ -547,6 +554,15 @@ class ExpenditureRecordForGivinLoanModelSafeSerializer(ExpenditureRecordModelSer
         @staticmethod
         def get_added_by(obj):
             return obj.added_by.__str__()
+
+
+class ExpenditureRecordForCreateForGivinLoanModelSafeSerializer(ExpenditureRecordForGivinLoanModelSafeSerializer):
+    extra_description = None
+
+    class Meta:
+        model = ExpenditureRecordModel
+        exclude = ('base_user', )
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return')
 
 
 class ExpenditureHeadingsHistoryModelSerializer(serializers.ModelSerializer):

@@ -5,7 +5,9 @@ from expenditure.api.serializers import (
     ExpenditureRecordModelSafeSerializer,
     ExpenditureRecordHistoryModelSerializer,
     ExpenditureHeadingsHistoryModelSerializer,
-    ExpenditureRecordForGivinLoanModelSafeSerializer
+    ExpenditureRecordForGivinLoanModelSafeSerializer,
+    ExpenditureRecordModelForCreateSerializer,
+    ExpenditureRecordForCreateForGivinLoanModelSafeSerializer
 )
 from project import permissions
 from base_user.models import BaseUserModel
@@ -89,7 +91,7 @@ class ExpenditureRecordHistory(generics.ListAPIView):
 
 
 class ExpenditureRecordCreateAPIView(generics.CreateAPIView):
-    serializer_class = ExpenditureRecordModelSafeSerializer
+    serializer_class = ExpenditureRecordModelForCreateSerializer
     permission_classes = [
         permissions.FundIsNotLocked,
         permissions.BaseUserOrSubUser,
@@ -257,7 +259,7 @@ class ExpenditureRecordVerifyAPIView(generics.UpdateAPIView):
 
 class ExpenditureRecordForGivingLoanCreateAPIView(ExpenditureRecordCreateAPIView):
 
-    serializer_class = ExpenditureRecordForGivinLoanModelSafeSerializer
+    serializer_class = ExpenditureRecordForCreateForGivinLoanModelSafeSerializer
     
     def get_queryset(self):
         queryset = None
