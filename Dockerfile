@@ -1,12 +1,11 @@
 FROM python:3.7
 
-ADD Pipfile /Pipfile
+ADD requirements.txt /requirements.txt
 
-RUN mkdir /code/
+RUN pip install -r requirements.txt \
+    && mkdir /code/
+
 WORKDIR /code/
 ADD . /code/
-
-RUN pip install -U pipenv \
-    && pipenv install --skip-lock
 
 ENV DJANGO_SETTINGS_MODULE=settings_module.deploy

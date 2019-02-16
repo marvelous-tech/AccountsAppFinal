@@ -9,6 +9,7 @@ pgdata/
 mydatabase
 pgdatabase/
 blob/
+backup/
 # C extensions 
 *.so  
 
