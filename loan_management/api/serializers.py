@@ -229,7 +229,7 @@ class ExpenditureForLoanSerializer(expend_serializers.ExpenditureRecordModelSafe
     class Meta:
         model = expend_models.ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'loan')
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'loan', 'is_verified_once')
 
     def create(self, validated_data):
         new_value = validated_data.get('amount')
@@ -285,6 +285,14 @@ class ExpenditureForLoanSerializer(expend_serializers.ExpenditureRecordModelSafe
         any more records. After authority add more Credit Loan in Database you can entry more records.''')
 
     def update(self, instance, validated_data):
+
+        if instance.is_verified is False and instance.is_verified_once is False and validated_data.get('is_verified') is True:
+            instance.is_verified_once = True
+            instance.is_verified = validated_data.get('is_verified', instance.is_verified)
+            instance.save()
+            return instance
+
+        # Todo: this will wrap in else block
         if instance.is_deleted is False and validated_data.get('is_deleted') is True:
             instance.is_deleted = True
             # Todo: add history with is_deleted = True
@@ -492,7 +500,7 @@ class ExpenditureForLoanForCreateSerializer(ExpenditureForLoanSerializer):
     class Meta:
         model = expend_models.ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'loan')
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'loan', 'is_verified_once')
 
 
 class CreditForLoanForCreateSerializer(CreditForLoanSerializer):
