@@ -260,7 +260,7 @@ class CreditFundHistory(generics.ListAPIView):
     ordering = ('-id',)
 
     def get_queryset(self):
-        return utils.get_base_user(self.request).all_expenditure_records_history.all()
+        return utils.get_base_user(self.request).all_credit_fund_histories.all()
 
 
 class CreditFundSourceHistory(generics.ListAPIView):
