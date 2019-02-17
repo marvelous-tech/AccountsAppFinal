@@ -39,6 +39,7 @@ urlpatterns += [
         path('user/extra/', include('user.api.urls')),
         path('loan/', include('loan_management.api.urls', namespace="loan-app")),
         path('archive-app/', include('archive_app.api.urls', namespace="archive-app")),
+        path('insight/', include('insight.api.urls')),
     ])),
     path('rest-auth/user/edit/', EditUserInfo.as_view(), name="edit_user_info"),
 ]
