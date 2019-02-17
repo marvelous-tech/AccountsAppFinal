@@ -135,7 +135,7 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_verified', 'is_for_refund', 'is_for_return')
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_verified', 'is_for_refund', 'is_for_return', 'is_verified_once')
 
     def request_data(self):
         return self.context['request']
@@ -177,6 +177,14 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
         raise serializers.ValidationError(detail='Credit Fund will be exceed! So you cannot add any more records. After authority add more Credit Fund in Database you can entry more records.')
 
     def update(self, instance, validated_data):
+
+        if instance.is_verified is False and instance.is_verified_once is False and validated_data.get('is_verified') is True:
+            instance.is_verified_once = True
+            instance.is_verified = validated_data.get('is_verified', instance.is_verified)
+            instance.save()
+            return instance
+
+        # Todo: this will wrap in else block
         if instance.is_deleted is False and validated_data.get('is_deleted') is True:
             instance.is_deleted = True
             # Todo: add history with is_deleted = True
@@ -251,7 +259,7 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
         raw_amount = instance.amount
         new_amount = validated_data.get('amount', instance.amount)
 
-        
+
 
         expend_obj = self.base_user_model().all_expenditure_records.all().filter(is_deleted=False)
         credit_obj = self.base_user_model().credit_funds.filter(is_deleted=False)
@@ -314,7 +322,7 @@ class ExpenditureRecordModelSerializer(ExpenditureRecordModelSafeSerializer):
     class Meta:
         model = ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return')
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return', 'is_verified_once')
 
 
 class ExpenditureRecordModelForCreateSerializer(ExpenditureRecordModelSafeSerializer):
@@ -323,7 +331,7 @@ class ExpenditureRecordModelForCreateSerializer(ExpenditureRecordModelSafeSerial
     class Meta:
         model = ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return')
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return', 'is_verified_once')
 
 
 class ExpenditureRecordVerifyModelSerializer(serializers.ModelSerializer):
@@ -331,7 +339,7 @@ class ExpenditureRecordVerifyModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenditureRecordModel
         fields = ('is_verified', )
-        read_only_fields = ('is_verified', )
+        read_only_fields = ('is_verified', 'is_verified_once')
 
     def create(self, validated_data):
         return None
@@ -384,8 +392,15 @@ class ExpenditureRecordForGivinLoanModelSafeSerializer(ExpenditureRecordModelSer
 
         def update(self, instance, validated_data):
 
+            if instance.is_verified is False and instance.is_verified_once is False and validated_data.get('is_verified') is True:
+                instance.is_verified_once = True
+                instance.is_verified = validated_data.get('is_verified', instance.is_verified)
+                instance.save()
+                return instance
+
+            # Todo: this will wrap in else block
             if instance.is_deleted is False and validated_data.get('is_deleted') is True:
-    
+
                 expend_obj_ret = self.base_user_model().all_expenditure_records.all().filter(
                     is_deleted=False,
                     is_for_return=True,
@@ -562,7 +577,7 @@ class ExpenditureRecordForCreateForGivinLoanModelSafeSerializer(ExpenditureRecor
     class Meta:
         model = ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return')
+        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_for_refund', 'is_for_return', 'is_verified_once')
 
 
 class ExpenditureHeadingsHistoryModelSerializer(serializers.ModelSerializer):
