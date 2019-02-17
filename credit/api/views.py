@@ -271,6 +271,20 @@ class CreditFundSourceHistory(generics.ListAPIView):
         return self.request.user.base_user.all_credit_fund_source_histories.all()
 
 
+class CreditWiseThisYearTotalAmountAPIView(generics.ListAPIView):
+    serializer_class = serializers.CreditFundModelSerializer
+    permission_classes = [permissions.BaseUserOrSubUser, ]
+    filter_backends = (filters.OrderingFilter, )
+    ordering_fields = ()
+    ordering = ('-id',)
+
+    def get_queryset(self):
+        return utils.get_base_user(self.request).credit_funds.all().filter(
+            fund_added__year=datetime.datetime.today().year,
+            is_deleted=False
+        )
+
+
 class CreditFundGenCSVEmail(CreditFundListAPIView):
     today = datetime.datetime.today().strftime("%d %B, %Y")
     headings = ['Source Name', 'Record Added Time', 'Fund Added Time', 'Amount']

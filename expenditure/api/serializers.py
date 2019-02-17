@@ -9,6 +9,7 @@ from base_user.models import BaseUserModel
 from sub_user.models import SubUserModel
 from utils import utils
 import uuid
+import datetime
 
 
 class ExpenditureHeadingModelSerializer(serializers.ModelSerializer):
@@ -16,12 +17,35 @@ class ExpenditureHeadingModelSerializer(serializers.ModelSerializer):
         view_name='expenditure_app:heading_view_update',
         lookup_field='uuid'
     )
+    total = serializers.SerializerMethodField(read_only=True)
+    total_this_year = serializers.SerializerMethodField(read_only=True)
     extra_description = serializers.CharField(max_length=255, read_only=False, write_only=True, allow_blank=True)
 
     class Meta:
         model = ExpenditureHeadingModel
         exclude = ('base_user', )
         read_only_fields = ('uuid', 'added', 'updated')
+
+    @staticmethod
+    def get_total(obj):
+        expend = ExpenditureRecordModel.objects.filter(
+            is_deleted=False,
+            is_verified=True,
+            expend_heading=obj
+        )
+        total = utils.sum_int_of_array([data.amount for data in expend])
+        return total
+
+    @staticmethod
+    def get_total_this_year(obj):
+        expend = ExpenditureRecordModel.objects.filter(
+            is_deleted=False,
+            is_verified=True,
+            expend_heading=obj,
+            expend_date__year=datetime.date.today().year
+        )
+        total = utils.sum_int_of_array([data.amount for data in expend])
+        return total
 
     def request_data(self):
         return self.context['request']

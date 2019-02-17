@@ -10,6 +10,7 @@ from base_user.models import BaseUserModel
 from sub_user.models import SubUserModel
 import uuid
 from utils import utils
+import datetime
 
 
 class CreditFundModelSerializer(serializers.ModelSerializer):
@@ -430,6 +431,8 @@ class CreditFundSourceModelSerializer(serializers.ModelSerializer):
         view_name='credit_app:fund_source_view_update_delete',
         lookup_field='uuid'
     )
+    total = serializers.SerializerMethodField(read_only=True)
+    total_this_year = serializers.SerializerMethodField(read_only=True)
     extra_description = serializers.CharField(read_only=False, write_only=True, allow_blank=True)
 
     class Meta:
@@ -443,12 +446,32 @@ class CreditFundSourceModelSerializer(serializers.ModelSerializer):
             'updated',
             'uuid',
             'is_deleted',
-            'extra_description'
+            'extra_description',
+            'total',
+            'total_this_year'
         )
         read_only_fields = ('uuid', 'added', 'updated', 'id')
 
     def request_data(self):
         return self.context['request']
+
+    @staticmethod
+    def get_total(obj):
+        credit = CreditFundModel.objects.filter(
+            source=obj,
+            is_deleted=False
+        )
+        total = utils.sum_int_of_array([data.amount for data in credit])
+        return total
+
+    @staticmethod
+    def get_total_this_year(obj):
+        credit = CreditFundModel.objects.filter(
+            source=obj, fund_added__year=datetime.date.today().year,
+            is_deleted=False
+        )
+        total_this_year = utils.sum_int_of_array([data.amount for data in credit])
+        return total_this_year
 
     def logged_in_user(self):
         return self.request_data().user
