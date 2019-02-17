@@ -4,7 +4,7 @@ __pycache__/ *.py[cod]
 *.pyc  
 .idea/
 .vscode/
-pgdata/
+pgdata*/
 *entrypoint*
 mydatabase
 pgdatabase/
