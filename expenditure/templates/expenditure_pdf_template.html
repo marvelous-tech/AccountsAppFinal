@@ -14,13 +14,13 @@
             @frame header_frame {          
                  /* Static Frame */
                 -pdf-frame-content: header_content;
-                width: 525pt; top: 10pt; height: 100pt;
+                left:20pt; width: 525pt; top: 10pt; height: 120pt;
                 /*-pdf-frame-border: 1;*/
             }
 
             @frame content_frame {          
                 /* Content Frame */
-                left: 35pt; width: 525pt; top: 92pt; height: 684pt;
+                left: 35pt; width: 525pt; top: 112pt; height: 664pt;
                 /*-pdf-frame-border: 1;*/
             }
 
@@ -87,11 +87,11 @@
         .good {
             color: #333;
         }
-
-        img {
-            margin: 0;
-            padding: 0;
-            line-height: 24pt;
+	 
+	img {
+            margin: 0pt;
+            padding: 0pt;
+            line-height: 18pt;
         }
     </style>
 </head>
@@ -99,11 +99,11 @@
 <body>
     <!-- Content for Static Frame 'header_frame' -->
     <div id="header_content">
-        <p style="text-align: center; font-size: 24pt; margin: 0;">
-            <img src="/home/ubuntu/project/static/blob/{{ company.getLogoURL }}" width="50pt" alt="Hi"> 
+	<img src="/home/ubuntu/project/static/blob/{{ company.getLogoURL }}" width="50pt" alt="Hi">
+        <p style="text-align: center; font-size: 18pt; margin: 0;"> 
             <i style="color: #064718; margin: 0;">{{ company.name }}</i>
         </p>
-        <i style="text-align: center; font-size: 9pt; margin: 0;">{{ company.title }}</i>
+        <i style="text-align: center; font-size: 9pt; margin: 0; text-decoration: underline;">{{ company.title }}</i>
         <p 
         style="text-align: center; font-size: 8pt; margin: 0; text-decoration:underline; color: #133a7a;"
         >{{ company.address }}</p>
