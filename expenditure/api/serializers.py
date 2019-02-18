@@ -159,7 +159,9 @@ class ExpenditureRecordModelSafeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenditureRecordModel
         exclude = ('base_user', )
-        read_only_fields = ('uuid', 'added_by', 'added', 'updated', 'is_verified', 'is_for_refund', 'is_for_return', 'is_verified_once')
+        read_only_fields = (
+            'uuid', 'added_by', 'added', 'updated', 'is_verified', 'is_for_refund', 'is_for_return', 'is_verified_once'
+        )
 
     def request_data(self):
         return self.context['request']

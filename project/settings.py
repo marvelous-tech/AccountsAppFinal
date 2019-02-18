@@ -27,7 +27,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = True
 SQLite = True
 
-ALLOWED_HOSTS = ['localhost', 'app']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -136,7 +136,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 
 """
 ALL EXTRA KAHINI
