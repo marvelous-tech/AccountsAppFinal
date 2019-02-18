@@ -40,11 +40,12 @@ class InsightCreditDebitYearListAPIView(generics.ListAPIView):
             is_deleted=False, fund_added__year=datetime.date.today().year).only('amount')
         expenditure = utils.get_base_user(request).all_expenditure_records.filter(
             is_deleted=False,
-            expend_date__year=datetime.date.today().year).only('amount')
+            expend_date__year=datetime.date.today().year,
+            is_verified=True).only('amount')
         data = [InsightCreditDebitModel(
             months[n],
             utils.sum_int_of_array(
-                [obj.amount for obj in credit.filter(fund_added__month=(n+1))]
+                [obj.amount for obj in credit.filter(fund_added__month__lte=(n+1))]
             ) - utils.sum_int_of_array(
                 [obj.amount for obj in expenditure.filter(
                     Q(is_for_return=True) | Q(is_for_refund=True),
@@ -53,7 +54,7 @@ class InsightCreditDebitYearListAPIView(generics.ListAPIView):
             ),
             utils.sum_int_of_array(
                 [obj.amount for obj in expenditure.filter(
-                    expend_date__month=(n+1),
+                    expend_date__month__lte=(n+1),
                     is_for_return=False,
                     is_for_refund=False
                 )]
