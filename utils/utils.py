@@ -1,4 +1,6 @@
 import csv
+import datetime
+import calendar
 from django.core.mail import EmailMessage
 from io import BytesIO
 from django.http import HttpResponse
@@ -62,3 +64,10 @@ def django_render_to_pdf(template_src, context_dict={}):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return None
+
+
+def get_all_days_of_a_month(year, month):
+    year = year
+    month = month
+    num_days = calendar.monthrange(year, month)[1]
+    return [day for day in range(1, num_days + 1)]

@@ -1,7 +1,8 @@
 from django.urls import path
-from insight.api.views import InsightCreditDebitYearListAPIView
+from insight.api import views
 
 
 urlpatterns = [
-    path('yearly/', InsightCreditDebitYearListAPIView.as_view()),
+    path('yearly/', views.InsightCreditDebitYearListAPIView.as_view()),
+    path('monthly/', views.InsightCreditDebitMonthlyListAPIView.as_view())
 ]
