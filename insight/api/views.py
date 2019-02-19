@@ -8,20 +8,22 @@ import datetime
 
 class InsightCreditDebitYearlyModel:
 
-    def __init__(self, month, credit, debit, credit_individual, debit_individual):
+    def __init__(self, month, credit, debit, balance, credit_individual, debit_individual):
         self.month = month
         self.credit = credit
         self.debit = debit
+        self.balance = balance
         self.credit_individual = credit_individual
         self.debit_individual = debit_individual
 
 
 class InsightCreditDebitMonthlyModel:
 
-    def __init__(self, day, credit, debit, credit_individual, debit_individual):
+    def __init__(self, day, credit, debit, balance, credit_individual, debit_individual):
         self.day = day
         self.credit = credit
         self.debit = debit
+        self.balance = balance
         self.credit_individual = credit_individual
         self.debit_individual = debit_individual
 
@@ -96,6 +98,13 @@ class InsightCreditDebitYearListAPIView(generics.ListAPIView):
                 )]
             ),
             utils.sum_int_of_array(
+                [obj.amount for obj in credit.filter(fund_added__month__lte=(n + 1))]
+            ) - utils.sum_int_of_array(
+                [obj.amount for obj in expenditure.filter(
+                    expend_date__month__lte=(n + 1)
+                )]
+            ),
+            utils.sum_int_of_array(
                 [obj.amount for obj in credit.filter(fund_added__month=(n + 1))]
             ) - utils.sum_int_of_array(
                 [obj.amount for obj in expenditure.filter(
@@ -114,7 +123,7 @@ class InsightCreditDebitYearListAPIView(generics.ListAPIView):
         return Response(data=[
             {'month': obj.month, 'credit': obj.credit,
              'debit': obj.debit, 'credit_individual': obj.credit_individual,
-             'debit_individual': obj.debit_individual} for obj in data
+             'balance': obj.balance, 'debit_individual': obj.debit_individual} for obj in data
         ])
 
 
@@ -147,6 +156,15 @@ class InsightCreditDebitMonthlyListAPIView(InsightCreditDebitYearListAPIView):
             ),
             utils.sum_int_of_array(
                 [obj.amount for obj in credit.filter(
+                    fund_added__lte=datetime.date(year=datetime.date.today().year, month=month, day=(n + 1))
+                )]
+            ) - utils.sum_int_of_array(
+                [obj.amount for obj in expenditure.filter(
+                    expend_date__lte=datetime.date(year=datetime.date.today().year, month=month, day=(n+1))
+                )]
+            ),
+            utils.sum_int_of_array(
+                [obj.amount for obj in credit.filter(
                     fund_added=datetime.date(year=datetime.date.today().year, month=month, day=(n + 1))
                 )]
             ) - utils.sum_int_of_array(
@@ -166,5 +184,5 @@ class InsightCreditDebitMonthlyListAPIView(InsightCreditDebitYearListAPIView):
         return Response(data=[
             {'day': obj.day, 'credit': obj.credit,
              'debit': obj.debit, 'credit_individual': obj.credit_individual,
-             'debit_individual': obj.debit_individual} for obj in data
+             'balance': obj.balance, 'debit_individual': obj.debit_individual} for obj in data
         ])
