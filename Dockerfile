@@ -10,4 +10,4 @@ RUN pip install -r requirements.txt \
 WORKDIR /code/
 ADD . /code/
 
-ENV DJANGO_SETTINGS_MODULE=settings_module.deploy
+ENV DJANGO_SETTINGS_MODULE=project.settings

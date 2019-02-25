@@ -25,7 +25,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-SQLite = True
+SQLite = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'crispy_forms',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -144,16 +146,17 @@ STATICFILES_DIRS = (
 ALL EXTRA KAHINI
 """
 
-CORS_ORIGIN_WHITELIST = (
-    '192.168.1.240',
-    '103.110.217.173'
-)
 
 if DEBUG:
     CORS_ORIGIN_WHITELIST = (
     '192.168.1.240',
     '103.110.217.173',
     'localhost:4200'
+    )
+else:
+    CORS_ORIGIN_WHITELIST = (
+        '192.168.1.240',
+        '103.110.217.173'
     )
 
 CORS_ALLOW_METHODS = (
@@ -254,6 +257,8 @@ INSTALLED_APPS += [
     'loan_management',
     'insight'
 ]
+
+INTERNAL_IPS = ["*"]
 
 # END
 

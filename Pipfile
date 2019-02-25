@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
+django-debug-toolbar = "*"
 
 [packages]
 django-allauth = "==0.38.0"

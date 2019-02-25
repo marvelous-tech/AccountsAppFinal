@@ -1,5 +1,6 @@
 import csv
-import datetime
+from credit.models import CreditFundModel
+from expenditure.models import ExpenditureRecordModel
 import calendar
 from django.core.mail import EmailMessage
 from io import BytesIO
@@ -8,13 +9,14 @@ from django.template.loader import get_template
 from xhtml2pdf import pisa
 from base_user.models import BaseUserModel
 from sub_user.models import SubUserModel
+from django.db.models import Sum, F
 
 
 def get_base_user(request):
-    if BaseUserModel.objects.filter(base_user=request.user).exists():
-        return request.user.base_user
-    elif SubUserModel.objects.filter(root_user=request.user).exists():
-        return request.user.root_sub_user.base_user
+    return BaseUserModel.objects.filter(base_user=request.user).first() or \
+        BaseUserModel.objects.filter(
+            pk=SubUserModel.objects.get(root_user=request.user).base_user_id
+        ).first()
 
 
 def sum_int_of_array(array):
@@ -71,3 +73,60 @@ def get_all_days_of_a_month(year, month):
     month = month
     num_days = calendar.monthrange(year, month)[1]
     return [day for day in range(1, num_days + 1)]
+
+
+def get_credit_amount(request, filters):
+    credit_amount = CreditFundModel.object.filter(base_user=get_base_user(request=request), **filters).aggregate(
+        sum=Sum(F('amount'))
+    )
+    return credit_amount['sum']
+
+
+def on_date_filter_balance(date_filters_credit={}, date_filters_expenditure={}, base_user=1):
+    _credit = CreditFundModel.objects.filter(
+        base_user=base_user,
+        **date_filters_credit,
+        is_deleted=False
+    ).only('amount')
+    _expenditure = ExpenditureRecordModel.objects.filter(
+        base_user=base_user,
+        **date_filters_expenditure,
+        is_deleted=False,
+        is_verified=True
+    ).only('amount')
+    sum_value = _credit.aggregate(
+        sum=Sum('amount') - _expenditure.aggregate(sum=Sum('amount'))['sum'])['sum']
+    return sum_value or 0
+
+
+def year_month_lt_balance(year, month, base_user=1):
+    return on_date_filter_balance(
+        {'fund_added__year': year, 'fund_added__month__lte': month},
+        {'expend_date__year': year, 'expend_date__month__lte': month},
+        base_user=base_user
+    )
+
+
+def get_credit_model(filters, request, only):
+    return CreditFundModel.objects.filter(
+        is_deleted=False,
+        **filters,
+        base_user=get_base_user(request)
+    ).only(*only)
+
+
+def get_expend_model(filters, only, request):
+    return ExpenditureRecordModel.objects.filter(
+        is_deleted=False,
+        **filters,
+        base_user=get_base_user(request)
+    ).only(*only)
+
+
+def get_expend_unverified_model(filters, only, request):
+    return ExpenditureRecordModel.objects.filter(
+        is_deleted=False,
+        is_verified=False,
+        **filters,
+        base_user=get_base_user(request)
+    ).only(*only)

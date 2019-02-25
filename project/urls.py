@@ -20,7 +20,7 @@ from user.api.views import EditUserInfo
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
-
+import debug_toolbar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -52,3 +52,11 @@ urlpatterns += [
     re_path(r'^api-token-refresh/', refresh_jwt_token),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 # END HERE
+
+urlpatterns = [
+    path('__debug__/', include(debug_toolbar.urls)),
+
+    # For django versions before 2.0:
+    # url(r'^__debug__/', include(debug_toolbar.urls)),
+
+] + urlpatterns

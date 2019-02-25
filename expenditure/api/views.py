@@ -2,7 +2,6 @@ from rest_framework import generics, status, filters
 from expenditure.api.serializers import (
     ExpenditureHeadingModelSerializer,
     ExpenditureRecordModelSerializer,
-    ExpenditureRecordModelSafeSerializer,
     ExpenditureRecordHistoryModelSerializer,
     ExpenditureHeadingsHistoryModelSerializer,
     ExpenditureRecordForGivinLoanModelSafeSerializer,
@@ -30,7 +29,7 @@ class ExpenditureHeadingListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.OnlyBaseUser, ]
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
     search_fields = ('heading_name', 'uuid', 'added', 'updated')
-    ordering = ('-added')
+    ordering = ('-added', )
 
     def get_queryset(self):
         return self.request.user.base_user.expenditure_headings.filter(is_deleted=False)
@@ -112,26 +111,18 @@ class ExpenditureRecordCreateAPIView(generics.CreateAPIView):
     ordering = ('-id',)
 
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=False
-                )
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=False
-                )
+        queryset = utils.get_expend_model(
+            filters={
+                'is_for_refund': False,
+                'is_for_return': False
+            },
+            only=(),
+            request=self.request
+        )
         return queryset
     
     def get_base_user(self):
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            return self.request.user.base_user
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            return self.request.user.root_sub_user.base_user
+        return utils.get_base_user(self.request)
 
 
 class ExpenditureRecordListAPIView(generics.ListAPIView):
@@ -155,13 +146,13 @@ class ExpenditureRecordListAPIView(generics.ListAPIView):
     ordering = ('-id',)
 
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(
-                added__year=datetime.datetime.today().year, is_deleted=False)
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
-                added__year=datetime.datetime.today().year, is_deleted=False)
+        queryset = utils.get_expend_model(
+            filters={
+                'added__year': datetime.datetime.today().year
+            },
+            only=(),
+            request=self.request
+        )
         return queryset
 
 
@@ -186,11 +177,11 @@ class ALLExpenditureRecordListAPIView(generics.ListAPIView):
     ordering = ('-id',)
 
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(is_deleted=False)
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(is_deleted=False)
+        queryset = utils.get_expend_model(
+            filters={},
+            only=(),
+            request=self.request
+        )
         return queryset
 
 
@@ -203,19 +194,14 @@ class ExpenditureRecordRetrieveAPIView(generics.RetrieveAPIView):
     lookup_field = 'uuid'
 
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=False
-                )
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=False
-                )
+        queryset = utils.get_expend_model(
+            filters={
+                'is_for_refund': False,
+                'is_for_return': False
+            },
+            only=(),
+            request=self.request
+        )
         return queryset
 
 
@@ -229,19 +215,14 @@ class ExpenditureRecordRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     lookup_field = 'uuid'
 
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=False
-                )
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=False
-                )
+        queryset = utils.get_expend_model(
+            filters={
+                'is_for_refund': False,
+                'is_for_return': False
+            },
+            only=(),
+            request=self.request
+        )
         return queryset
 
 
@@ -262,19 +243,14 @@ class ExpenditureRecordForGivingLoanCreateAPIView(ExpenditureRecordCreateAPIView
     serializer_class = ExpenditureRecordForCreateForGivinLoanModelSafeSerializer
     
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(
-                added__year=datetime.datetime.today().year,
-                is_deleted=False,
-                is_for_return=True
-                )
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
-                added__year=datetime.datetime.today().year,
-                is_deleted=False,
-                is_for_return=True
-                )
+        queryset = utils.get_expend_model(
+            filters={
+                'is_for_refund': False,
+                'is_for_return': True
+            },
+            only=(),
+            request=self.request
+        )
         return queryset
 
 
@@ -283,19 +259,15 @@ class ExpenditureRecordForGivingLoanListAPIView(ExpenditureRecordListAPIView):
     serializer_class = ExpenditureRecordForGivinLoanModelSafeSerializer
 
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(
-                added__year=datetime.datetime.today().year,
-                is_deleted=False,
-                is_for_return=True
-                )
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
-                added__year=datetime.datetime.today().year,
-                is_deleted=False,
-                is_for_return=True
-                )
+        queryset = utils.get_expend_model(
+            filters={
+                'is_for_refund': False,
+                'is_for_return': True,
+                'added__year': datetime.date.today().year
+            },
+            only=(),
+            request=self.request
+        )
         return queryset
 
 
@@ -304,19 +276,14 @@ class ExpenditureRecordForGivingLoanRetrieveAPIView(ExpenditureRecordRetrieveAPI
     serializer_class = ExpenditureRecordForGivinLoanModelSafeSerializer
 
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=True
-                )
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=True
-                )
+        queryset = utils.get_expend_model(
+            filters={
+                'is_for_refund': False,
+                'is_for_return': False
+            },
+            only=(),
+            request=self.request
+        )
         return queryset
 
 
@@ -325,19 +292,14 @@ class ExpenditureRecordForGivingLoanRetrieveUpdateAPIView(ExpenditureRecordRetri
     serializer_class = ExpenditureRecordForGivinLoanModelSafeSerializer
 
     def get_queryset(self):
-        queryset = None
-        if BaseUserModel.objects.filter(base_user=self.request.user).exists():
-            queryset = self.request.user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=True
-                )
-        elif SubUserModel.objects.filter(root_user=self.request.user).exists():
-            queryset = self.request.user.root_sub_user.base_user.all_expenditure_records.filter(
-                is_deleted=False,
-                is_for_refund=False,
-                is_for_return=True
-                )
+        queryset = utils.get_expend_model(
+            filters={
+                'is_for_refund': False,
+                'is_for_return': False
+            },
+            only=(),
+            request=self.request
+        )
         return queryset
 
 
