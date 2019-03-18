@@ -26,6 +26,7 @@ django-rest-multiple-models = "*"
 psycopg2 = "*"
 gunicorn = "*"
 whitenoise = "*"
+python3-memcached = "*"
 
 [requires]
 python_version = "3"

@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 SQLite = False
 
 ALLOWED_HOSTS = ['*']
@@ -145,11 +145,7 @@ ALL EXTRA KAHINI
 
 
 if DEBUG:
-    CORS_ORIGIN_WHITELIST = (
-    '192.168.1.240',
-    '103.110.217.173',
-    'localhost:4200'
-    )
+    CORS_ORIGIN_ALLOW_ALL = False
 else:
     CORS_ORIGIN_WHITELIST = (
         '192.168.1.240',

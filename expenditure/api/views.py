@@ -279,7 +279,7 @@ class ExpenditureRecordForGivingLoanRetrieveAPIView(ExpenditureRecordRetrieveAPI
         queryset = utils.get_expend_model(
             filters={
                 'is_for_refund': False,
-                'is_for_return': False
+                'is_for_return': True
             },
             only=(),
             request=self.request
@@ -295,7 +295,7 @@ class ExpenditureRecordForGivingLoanRetrieveUpdateAPIView(ExpenditureRecordRetri
         queryset = utils.get_expend_model(
             filters={
                 'is_for_refund': False,
-                'is_for_return': False
+                'is_for_return': True
             },
             only=(),
             request=self.request
